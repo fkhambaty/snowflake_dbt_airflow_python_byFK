@@ -1,0 +1,23 @@
+version: 2
+
+seeds:
+  - name: transaction_type_mapping
+    description: >
+      Business vocabulary for transaction types. Lives in the dbt repo (not Postgres) because the
+      source system does not store direction/category - analysts own this mapping.
+    config:
+      column_types:
+        transaction_type: varchar(30)
+        direction: varchar(6)
+        category: varchar(20)
+        is_fee: boolean
+        is_customer_initiated: boolean
+        description: varchar(200)
+    columns:
+      - name: transaction_type
+        data_tests: [unique, not_null]
+      - name: direction
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["CREDIT", "DEBIT"]

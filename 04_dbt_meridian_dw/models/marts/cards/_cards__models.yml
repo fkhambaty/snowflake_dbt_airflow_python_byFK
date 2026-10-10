@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: dim_merchant
+    columns:
+      - name: merchant_key
+        data_tests: [unique, not_null]
+  - name: dim_card
+    columns:
+      - name: card_key
+        data_tests: [unique, not_null]
+  - name: dim_sale_event
+    columns:
+      - name: sale_event_key
+        data_tests: [unique, not_null]
+  - name: dim_offer
+    columns:
+      - name: offer_code
+        data_tests: [unique, not_null]
+  - name: fct_card_applications
+    description: One row per card application. Features are frozen at apply time. policy_probability is the published policy, not the label.
+    columns:
+      - name: application_id
+        data_tests: [unique, not_null]
+      - name: decision
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['APPROVED', 'REJECTED', 'PENDING']
+  - name: fct_card_authorizations
+    description: One row per authorization. is_rule_suspect is computed from behavior. fraud_label is synthetic ground truth and is not an input.
+    columns:
+      - name: authorization_id
+        data_tests: [unique, not_null]
+      - name: response
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['APPROVED', 'DECLINED']
+  - name: fct_card_fraud_alerts
+    description: Authorizations the rules want a human to look at.
+  - name: fct_next_best_offer
+    description: One recommended offer per customer. Suppressed customers (fraud review, blocked card) have no row.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: offer_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_offer')
+                field: offer_code
+
+exposures:
+  - name: weekly_card_decisioning
+    label: Weekly card model train-score-publish
+    type: ml
+    maturity: low
+    description: >
+      Airflow refreshes the gold features, Python trains and gates the models, and dbt
+      publishes only scores from the latest successful run. Synthetic labels and policy.
+    depends_on:
+      - ref('ml_customer_features')
+      - ref('fct_card_applications')
+      - ref('fct_card_authorizations')
+      - ref('stg_ml__model_scores')
+      - ref('fct_next_best_offer')
+    owner:
+      name: FK
+      email: "{{ env_var('DBT_OWNER_EMAIL', 'not-provided') }}"

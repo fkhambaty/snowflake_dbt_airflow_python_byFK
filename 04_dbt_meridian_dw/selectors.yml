@@ -1,0 +1,32 @@
+# Named selections used by Airflow and CI. `dbt build --selector microbatch`
+selectors:
+  - name: microbatch
+    description: Everything that must refresh every 5 minutes (staging, intermediate, incremental facts)
+    definition:
+      union:
+        - method: tag
+          value: microbatch
+        - method: fqn
+          value: fct_transactions
+        - method: fqn
+          value: agg_branch_daily_performance
+        - exclude:
+            - method: tag
+              value: completeness
+
+  - name: daily
+    description: Snapshots, SCD2 dimensions, periodic & accumulating snapshots, bronze-to-staging completeness, everything else
+    definition:
+      union:
+        - method: tag
+          value: snapshots
+        - method: tag
+          value: marts
+        - method: tag
+          value: completeness
+
+  - name: ci_slim
+    description: Only what changed vs production manifest, plus downstream
+    definition:
+      method: state
+      value: modified+

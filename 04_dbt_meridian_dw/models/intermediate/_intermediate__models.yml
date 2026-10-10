@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_fx_rates_daily_filled
+    description: Gap-free daily FX grid (every day x every currency) to the reporting currency, forward-filled over weekends/holidays.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, currency_code]
+    columns:
+      - name: rate_to_reporting
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+      - name: rate_age_days
+        description: Days since the rate was actually published. 0 on business days, 1-2 over weekends.
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 5           # anything older means treasury stopped publishing - alert
+
+  - name: int_account_primary_holder
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+
+  - name: int_transactions_with_fx
+    description: Typed transactions with direction and reporting-currency amounts at transaction-date rate.
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: amount_reporting
+        description: Amount converted to the group reporting currency at the transaction-date rate.

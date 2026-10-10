@@ -1,0 +1,11 @@
+transaction_type,direction,category,is_fee,is_customer_initiated,description
+DEPOSIT,CREDIT,CASH,false,true,Cash or cheque deposit
+WITHDRAWAL,DEBIT,CASH,false,true,Cash withdrawal
+TRANSFER_IN,CREDIT,TRANSFER,false,true,Incoming transfer
+TRANSFER_OUT,DEBIT,TRANSFER,false,true,Outgoing transfer
+CARD_PAYMENT,DEBIT,CARD,false,true,Card purchase at merchant
+FEE,DEBIT,BANK,true,false,Bank charge
+INTEREST,CREDIT,BANK,false,false,Interest credited
+LOAN_EMI,DEBIT,LOAN,false,false,Loan instalment
+SALARY_CREDIT,CREDIT,TRANSFER,false,false,Salary credit from employer
+REFUND,CREDIT,CARD,false,false,Merchant refund

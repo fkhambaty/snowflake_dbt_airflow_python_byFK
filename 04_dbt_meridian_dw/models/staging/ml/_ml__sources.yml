@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: ml
+    description: >
+      Output of 09_decisioning_python. A second source of the warehouse, owned by the
+      training job (role MERIDIAN_ML). Append-only: one row per model run, and every
+      score that run produced.
+    database: MERIDIAN_RAW
+    schema: ML
+    loader: 09_decisioning_python/train_and_score.py (weekly)
+    config:
+      loaded_at_field: scored_at
+      freshness:
+        warn_after: {count: 8, period: day}
+        error_after: {count: 15, period: day}
+    tables:
+      - name: model_runs
+        config:
+          loaded_at_field: trained_at
+        columns:
+          - name: run_id
+            data_tests: [unique, not_null]
+      - name: model_scores
+
+models:
+  - name: stg_ml__model_scores
+    description: Scores from the latest SUCCEEDED run of each model. A rejected run never reaches a mart.
+    columns:
+      - name: score
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['model_name', 'entity_type', 'entity_id']

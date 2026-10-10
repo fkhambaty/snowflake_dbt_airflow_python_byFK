@@ -1,0 +1,90 @@
+name: meridian_dw
+version: 1.0.0
+config-version: 2
+require-dbt-version: ">=1.10.0"
+
+profile: meridian_dw
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+clean-targets: ["target", "dbt_packages"]
+
+# Snowflake QUERY_TAG identifies the environment (profiles.yml). This comment identifies
+# the exact dbt node in QUERY_HISTORY without mutating session state in model hooks.
+query-comment:
+  comment: "meridian|dbt|target={{ target.name }}|node={{ node.unique_id }}"
+  append: true
+
+vars:
+  # Reporting currency for the whole group. Change once -> every USD column recomputes.
+  reporting_currency: "USD"
+  # dim_date range
+  date_spine_start: "2023-01-01"
+  date_spine_end: "2027-12-31"
+  # In dev, facts are limited to the last N days so `dbt build` stays fast and cheap
+  dev_days_of_history: 30
+  # Incremental lookback: how far back (by extraction time) we re-merge to catch anything a
+  # previous run may have raced with. MERGE makes re-processing harmless.
+  incremental_lookback_hours: 2
+  # Roles that may read the prod marts. Which ROWS they see is the row access policy's job.
+  mart_readers: ["MERIDIAN_ANALYST", "MERIDIAN_ML", "MERIDIAN_APP",
+                 "MERIDIAN_CEO", "MERIDIAN_BRANCH_MANAGER", "MERIDIAN_STAFF", "MERIDIAN_CUSTOMER"]
+
+on-run-end:
+  - "{{ grant_schema_usage(schemas) }}"
+
+# Every model gets tagged with its layer; the Airflow DAGs select by tag.
+models:
+  meridian_dw:
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: append_new_columns
+    staging:
+      +schema: staging
+      +materialized: view          # cheap, always fresh; transactions override to incremental
+      +tags: ["staging", "microbatch"]
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+      +tags: ["intermediate", "microbatch"]
+    marts:
+      +schema: marts
+      +materialized: table
+      +tags: ["marts"]
+      # Grants as code: re-applied by dbt after every rebuild. Without USAGE on the schema
+      # (granted only on prod MARTS, see grant_schema_usage) these grants open nothing.
+      +grants:
+        select: ["MERIDIAN_ANALYST", "MERIDIAN_ML", "MERIDIAN_APP",
+                 "MERIDIAN_CEO", "MERIDIAN_BRANCH_MANAGER", "MERIDIAN_STAFF", "MERIDIAN_CUSTOMER"]
+      +post-hook: "{{ apply_governance() }}"
+      core:
+        +tags: ["core"]
+      finance:
+        +tags: ["finance"]
+      cards:
+        +tags: ["cards"]
+      governance:
+        +tags: ["governance"]
+        +grants:
+          select: []
+
+snapshots:
+  meridian_dw:
+    +schema: snapshots
+    +tags: ["snapshots", "daily"]
+
+seeds:
+  meridian_dw:
+    +schema: seeds
+    +quote_columns: false
+
+tests:
+  meridian_dw:
+    +store_failures: true        # failures land in a table you can SELECT from (great on camera)
+    +schema: dq_failures

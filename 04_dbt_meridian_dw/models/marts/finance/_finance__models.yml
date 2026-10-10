@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: agg_branch_daily_performance
+    description: Branch x day x currency KPIs for the branch performance dashboard. Rebuilt for the last 2 days every micro-batch.
+    columns:
+      - name: branch_day_key
+        data_tests: [unique, not_null]
+      - name: digital_share
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+exposures:
+  - name: branch_performance_dashboard
+    label: Branch Performance Dashboard
+    type: dashboard
+    maturity: medium
+    url: https://app.snowflake.com/  # Snowsight dashboard or Streamlit app
+    description: >
+      Daily deposits, withdrawals, net flow, fee income and digital adoption per branch,
+      in local and reporting currency. Owned by Retail Banking Finance.
+    depends_on:
+      - ref('agg_branch_daily_performance')
+      - ref('dim_branch')
+      - ref('dim_date')
+    owner:
+      name: FK
+      email: "{{ env_var('DBT_OWNER_EMAIL', 'not-provided') }}"
+
+  - name: loan_pipeline_review
+    label: Weekly Loan Pipeline Review
+    type: analysis
+    maturity: low
+    description: Time-to-decision and time-to-disbursal trends by branch and product.
+    depends_on:
+      - ref('fct_loan_applications')
+      - ref('dim_branch')
+      - ref('dim_product')
+    owner:
+      name: FK
+      email: "{{ env_var('DBT_OWNER_EMAIL', 'not-provided') }}"

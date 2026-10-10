@@ -1,0 +1,38 @@
+version: 2
+
+# dbt unit tests (1.8+): fixed input rows -> expected output rows, no warehouse data needed.
+# Data tests ask "is today's data sane?". Unit tests ask "is the logic right?".
+# Run: dbt test --select test_type:unit
+
+unit_tests:
+  - name: fx_forward_fills_the_weekend
+    description: >
+      Treasury publishes on Friday and Monday. Saturday and Sunday must carry Friday's
+      rate, flagged as forward-filled, with the age of the rate in days. The reporting
+      currency converts at exactly 1 every day.
+    model: int_fx_rates_daily_filled
+    given:
+      - input: ref('stg_postgres__currencies')
+        rows:
+          - {currency_code: USD}
+          - {currency_code: INR}
+      - input: ref('stg_postgres__fx_rates')
+        rows:
+          - {rate_date: "2026-01-02", from_currency: INR, to_currency: USD, rate: 0.012000, rate_source: ECB}
+          - {rate_date: "2026-01-05", from_currency: INR, to_currency: USD, rate: 0.012100, rate_source: ECB}
+      - input: ref('dim_date')
+        rows:
+          - {date_day: "2026-01-02"}
+          - {date_day: "2026-01-03"}
+          - {date_day: "2026-01-04"}
+          - {date_day: "2026-01-05"}
+    expect:
+      rows:
+        - {date_day: "2026-01-02", currency_code: INR, rate_to_reporting: 0.012000, rate_age_days: 0, is_forward_filled: false}
+        - {date_day: "2026-01-03", currency_code: INR, rate_to_reporting: 0.012000, rate_age_days: 1, is_forward_filled: true}
+        - {date_day: "2026-01-04", currency_code: INR, rate_to_reporting: 0.012000, rate_age_days: 2, is_forward_filled: true}
+        - {date_day: "2026-01-05", currency_code: INR, rate_to_reporting: 0.012100, rate_age_days: 0, is_forward_filled: false}
+        - {date_day: "2026-01-02", currency_code: USD, rate_to_reporting: 1, rate_age_days: 0, is_forward_filled: false}
+        - {date_day: "2026-01-03", currency_code: USD, rate_to_reporting: 1, rate_age_days: 0, is_forward_filled: false}
+        - {date_day: "2026-01-04", currency_code: USD, rate_to_reporting: 1, rate_age_days: 0, is_forward_filled: false}
+        - {date_day: "2026-01-05", currency_code: USD, rate_to_reporting: 1, rate_age_days: 0, is_forward_filled: false}

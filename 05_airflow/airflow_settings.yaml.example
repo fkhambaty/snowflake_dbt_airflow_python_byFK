@@ -1,0 +1,8 @@
+# Copy to airflow_settings.yaml, start Airflow, then run `astro dev object import`.
+# Four slots match max_active_tis_per_dag=4: enough parallelism without letting twenty
+# extraction connections compete with the banking application.
+airflow:
+  pools:
+    - pool_name: meridian_postgres
+      pool_slot: 4
+      pool_description: Bounded read pressure on the Postgres source

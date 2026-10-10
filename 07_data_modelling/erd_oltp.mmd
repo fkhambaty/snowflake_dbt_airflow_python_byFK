@@ -1,0 +1,68 @@
+%% Postgres OLTP (3NF) — paste into https://mermaid.live or the VS Code Mermaid extension
+erDiagram
+    ref_currencies ||--o{ ref_countries : "currency_code"
+    ref_currencies ||--o{ ref_fx_rates : "from/to_currency"
+    ref_countries ||--o{ core_branches : "country_code"
+    core_branches ||--o{ core_employees : "branch_id"
+    core_branches ||--o{ core_customers : "home_branch_id"
+    core_branches ||--o{ core_accounts : "branch_id"
+    ref_products ||--o{ core_accounts : "product_id"
+    ref_currencies ||--o{ core_accounts : "currency_code"
+    core_accounts ||--o{ core_account_holders : "account_id"
+    core_customers ||--o{ core_account_holders : "customer_id"
+    core_accounts ||--o{ core_transactions : "account_id"
+    ref_channels ||--o{ core_transactions : "channel_id"
+    core_branches o|--o{ core_transactions : "branch_id (nullable)"
+    core_employees o|--o{ core_transactions : "employee_id (nullable)"
+    core_customers ||--o{ core_loan_applications : "customer_id"
+    ref_products ||--o{ core_loan_applications : "product_id"
+
+    core_customers {
+        bigint customer_id PK
+        text customer_number UK
+        text segment "SCD2"
+        text kyc_status "SCD2"
+        text risk_rating "SCD2"
+        int home_branch_id FK
+        timestamptz updated_at "CDC cursor"
+    }
+    core_accounts {
+        bigint account_id PK
+        text account_number UK
+        int product_id FK
+        int branch_id FK
+        char currency_code FK
+        text status "SCD2"
+        numeric current_balance "excluded from dim"
+        timestamptz updated_at
+    }
+    core_account_holders {
+        bigint account_id PK_FK
+        bigint customer_id PK_FK
+        text holder_role
+    }
+    core_transactions {
+        bigint transaction_id PK
+        bigint account_id FK
+        timestamptz transaction_ts
+        text transaction_type
+        numeric amount "always positive"
+        char currency_code
+        smallint channel_id FK
+        text status "PENDING POSTED REVERSED"
+        timestamptz updated_at "CDC cursor - NO INDEX (perf lab)"
+    }
+    core_loan_applications {
+        bigint application_id PK
+        bigint customer_id FK
+        text status
+        timestamptz applied_at
+        timestamptz approved_at
+        timestamptz disbursed_at
+    }
+    ref_fx_rates {
+        date rate_date
+        char from_currency
+        char to_currency
+        numeric rate "business days only"
+    }

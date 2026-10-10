@@ -1,0 +1,74 @@
+version: 2
+
+sources:
+  - name: postgres_core
+    description: Append-only VARIANT replica of the Postgres `core` schema (landed by 02_ingestion_python).
+    database: MERIDIAN_RAW
+    schema: POSTGRES_CORE
+    loader: pg_to_snowflake.py (micro-batch, 5 min)
+    config:
+      loaded_at_field: _extracted_at
+      freshness:                       # defaults for small dimension-like tables
+        warn_after: {count: 6, period: hour}
+        error_after: {count: 24, period: hour}
+    tables:
+      - name: branches
+      - name: employees
+      - name: customers
+      - name: accounts
+      - name: account_holders
+      - name: loan_applications
+      - name: customer_features
+        description: Point-in-time attributes the underwriting policy is allowed to see.
+      - name: card_applications
+      - name: credit_cards
+      - name: card_authorizations
+        description: Card authorizations, including a synthetic fraud_label used only for evaluation.
+        config:
+          freshness:
+            warn_after: {count: 15, period: minute}
+            error_after: {count: 60, period: minute}
+      - name: transactions
+        description: Hot path. Freshness SLA is 15 minutes.
+        config:
+          freshness:
+            warn_after: {count: 15, period: minute}
+            error_after: {count: 60, period: minute}
+        columns:
+          - name: record
+            description: Whole Postgres row as a JSON object.
+          - name: _extracted_at
+            description: UTC time the micro-batch started. Used for incremental filtering.
+
+  - name: postgres_ref
+    database: MERIDIAN_RAW
+    schema: POSTGRES_REF
+    config:
+      loaded_at_field: _extracted_at
+      freshness:
+        warn_after: {count: 2, period: day}
+        error_after: {count: 7, period: day}
+    tables:
+      - name: currencies
+      - name: countries
+      - name: channels
+      - name: products
+      - name: merchants
+      - name: sale_events
+        description: Published marketplace sale windows (Flipkart Big Billion Days, Amazon Great Indian Festival, Prime Day).
+      - name: offer_catalog
+      - name: fx_rates
+        description: Daily treasury close. One row per (date, currency). Weekends missing by design.
+        config:
+          freshness:
+            warn_after: {count: 36, period: hour}   # Monday morning must still pass
+            error_after: {count: 4, period: day}
+
+  - name: postgres_cdc
+    database: MERIDIAN_RAW
+    schema: POSTGRES_CDC
+    config:
+      loaded_at_field: _extracted_at
+    tables:
+      - name: deleted_records
+        description: Hard deletes logged by trigger cdc.log_delete().

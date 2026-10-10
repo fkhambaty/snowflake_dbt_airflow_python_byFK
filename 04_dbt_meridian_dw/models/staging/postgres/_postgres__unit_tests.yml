@@ -1,0 +1,50 @@
+version: 2
+
+unit_tests:
+  - name: transaction_status_update_keeps_the_latest_version
+    description: >
+      The source emits PENDING and then POSTED for the same transaction. Append-only
+      raw contains both; staging must expose one row with the newest source update.
+      This proves the dedupe rule independently of the incremental MERGE.
+    model: stg_postgres__transactions
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('stg_postgres__deleted_records')
+        rows: []
+      - input: source('postgres_core', 'transactions')
+        format: dict
+        rows:
+          - record:
+              transaction_id: 101
+              account_id: 10
+              transaction_ts: "2026-09-01 10:00:00"
+              transaction_type: CARD_PURCHASE
+              amount: 100.00
+              currency_code: INR
+              status: PENDING
+              reference_no: ref101
+              created_at: "2026-09-01 10:00:00"
+              updated_at: "2026-09-01 10:00:00"
+            _extracted_at: "2026-09-01 10:01:00"
+            _batch_id: first
+          - record:
+              transaction_id: 101
+              account_id: 10
+              transaction_ts: "2026-09-01 10:00:00"
+              transaction_type: CARD_PURCHASE
+              amount: 100.00
+              currency_code: INR
+              status: POSTED
+              reference_no: ref101
+              created_at: "2026-09-01 10:00:00"
+              updated_at: "2026-09-01 10:04:00"
+            _extracted_at: "2026-09-01 10:05:00"
+            _batch_id: second
+    expect:
+      rows:
+        - transaction_id: 101
+          status: POSTED
+          updated_at: "2026-09-01 10:04:00"
+          _batch_id: second

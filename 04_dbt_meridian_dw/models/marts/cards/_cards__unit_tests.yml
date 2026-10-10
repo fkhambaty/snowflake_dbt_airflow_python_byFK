@@ -1,0 +1,49 @@
+version: 2
+
+unit_tests:
+  - name: fraud_rules_fire_on_the_right_tap
+    description: >
+      Card 1 makes four 1-rupee taps a minute apart: only the fourth tap has four
+      authorizations in ten minutes, so only it is velocity and card-testing. The first
+      three are not yet a pattern; that is why the data test measures recall per card.
+      Card 2 is an Indian customer charged online by a US merchant: geo mismatch on one row.
+    model: fct_card_authorizations
+    given:
+      - input: ref('stg_postgres__card_authorizations')
+        rows:
+          - {authorization_id: 1, card_id: 1, customer_id: 10, merchant_id: 100, auth_ts: "2026-09-01 10:00:00", amount: 1.00, currency_code: INR, entry_mode: ECOM, card_present: false, merchant_country: IN, response: APPROVED, decline_reason: null, fraud_label: true, fraud_pattern: CARD_TESTING, _extracted_at: "2026-09-01 10:05:00"}
+          - {authorization_id: 2, card_id: 1, customer_id: 10, merchant_id: 100, auth_ts: "2026-09-01 10:01:00", amount: 1.00, currency_code: INR, entry_mode: ECOM, card_present: false, merchant_country: IN, response: APPROVED, decline_reason: null, fraud_label: true, fraud_pattern: CARD_TESTING, _extracted_at: "2026-09-01 10:05:00"}
+          - {authorization_id: 3, card_id: 1, customer_id: 10, merchant_id: 100, auth_ts: "2026-09-01 10:02:00", amount: 1.00, currency_code: INR, entry_mode: ECOM, card_present: false, merchant_country: IN, response: APPROVED, decline_reason: null, fraud_label: true, fraud_pattern: CARD_TESTING, _extracted_at: "2026-09-01 10:05:00"}
+          - {authorization_id: 4, card_id: 1, customer_id: 10, merchant_id: 100, auth_ts: "2026-09-01 10:03:00", amount: 1.00, currency_code: INR, entry_mode: ECOM, card_present: false, merchant_country: IN, response: APPROVED, decline_reason: null, fraud_label: true, fraud_pattern: CARD_TESTING, _extracted_at: "2026-09-01 10:05:00"}
+          - {authorization_id: 5, card_id: 2, customer_id: 20, merchant_id: 200, auth_ts: "2026-09-01 12:00:00", amount: 900.00, currency_code: INR, entry_mode: ECOM, card_present: false, merchant_country: US, response: APPROVED, decline_reason: null, fraud_label: true, fraud_pattern: GEO_MISMATCH, _extracted_at: "2026-09-01 12:05:00"}
+      - input: ref('dim_customer')
+        rows:
+          - {customer_key: c10, customer_id: 10, country_code: IN, valid_from: "1900-01-01", valid_to: "9999-12-31"}
+          - {customer_key: c20, customer_id: 20, country_code: IN, valid_from: "1900-01-01", valid_to: "9999-12-31"}
+      - input: ref('dim_card')
+        rows:
+          - {card_key: k1, card_id: 1, credit_limit: 100000, branch_id: 1}
+          - {card_key: k2, card_id: 2, credit_limit: 100000, branch_id: 1}
+      - input: ref('dim_merchant')
+        rows:
+          - {merchant_key: m100, merchant_id: 100, marketplace: null, is_marketplace: false, category_group: ELECTRONICS}
+          - {merchant_key: m200, merchant_id: 200, marketplace: null, is_marketplace: false, category_group: TRAVEL}
+      - input: ref('dim_branch')
+        rows:
+          - {branch_key: b1, branch_id: 1}
+      - input: ref('dim_currency')
+        rows:
+          - {currency_key: inr, currency_code: INR}
+      - input: ref('dim_sale_event')
+        rows:
+          - {sale_event_key: s1, marketplace: FLIPKART, country_code: IN, event_name: Big Billion Days, starts_on: "2026-09-23", ends_on: "2026-10-02"}
+      - input: ref('int_fx_rates_daily_filled')
+        rows:
+          - {currency_code: INR, date_day: "2026-09-01", rate_to_reporting: 0.012}
+    expect:
+      rows:
+        - {authorization_id: 1, auths_in_10m: 1, is_velocity: false, is_card_testing: false, is_geo_mismatch: false, is_rule_suspect: false}
+        - {authorization_id: 2, auths_in_10m: 2, is_velocity: false, is_card_testing: false, is_geo_mismatch: false, is_rule_suspect: false}
+        - {authorization_id: 3, auths_in_10m: 3, is_velocity: false, is_card_testing: false, is_geo_mismatch: false, is_rule_suspect: false}
+        - {authorization_id: 4, auths_in_10m: 4, is_velocity: true,  is_card_testing: true,  is_geo_mismatch: false, is_rule_suspect: true}
+        - {authorization_id: 5, auths_in_10m: 1, is_velocity: false, is_card_testing: false, is_geo_mismatch: true,  is_rule_suspect: true}

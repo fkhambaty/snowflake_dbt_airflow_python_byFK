@@ -1,0 +1,73 @@
+name: Meridian offline checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q tests
+      - run: python -m py_compile 02_ingestion_python/*.py 05_airflow/dags/*.py 09_decisioning_python/*.py 10_semantic_app/streamlit_app.py
+
+  dbt-parse-and-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 04_dbt_meridian_dw
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r ../requirements.txt
+      - name: Write offline profile
+        run: |
+          mkdir -p ~/.dbt
+          printf 'meridian_dw:\n  target: prod\n  outputs:\n    prod:\n      type: snowflake\n      account: offline\n      user: offline\n      password: offline\n      role: MERIDIAN_TRANSFORMER\n      warehouse: WH_TRANSFORM_XS\n      database: MERIDIAN_ANALYTICS\n      schema: analytics\n      threads: 4\n' > ~/.dbt/profiles.yml
+      - run: dbt deps
+      - run: dbt parse --no-partial-parse --warn-error
+      - name: Enforced SQL style baseline
+        run: >-
+          sqlfluff lint
+          models/intermediate/int_account_primary_holder.sql
+          --dialect snowflake --templater jinja
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan of the full git history
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - name: Known-vulnerability audit of Python dependencies
+        run: pip-audit -r requirements.txt -r 05_airflow/requirements.txt
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 11_platform_terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate

@@ -1,0 +1,62 @@
+name: Meridian dbt slim CI
+
+on:
+  pull_request:
+    paths:
+      - "04_dbt_meridian_dw/**"
+      - "02_ingestion_python/dbt_artifact.py"
+      - ".github/workflows/meridian-dbt-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: meridian-dbt-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_DBT_USER: MERIDIAN_DBT_SVC
+  SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/dbt_key.p8
+  DBT_SCHEMA: dbt_ci_pr_${{ github.event.pull_request.number || github.run_id }}
+
+jobs:
+  slim-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 04_dbt_meridian_dw
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r ../requirements.txt
+      - name: Write Snowflake private key
+        run: printf '%s' "${{ secrets.SNOWFLAKE_DBT_PRIVATE_KEY }}" > "$SNOWFLAKE_PRIVATE_KEY_PATH"
+      - name: Configure dbt
+        run: mkdir -p ~/.dbt && cp profiles.yml.example ~/.dbt/profiles.yml
+      - run: dbt deps
+      - name: Fetch promoted production manifest
+        working-directory: ${{ github.workspace }}
+        run: python 02_ingestion_python/dbt_artifact.py download 04_dbt_meridian_dw/prod-state
+      - name: Build changed nodes and descendants
+        run: >-
+          dbt build --target dev
+          --select state:modified+
+          --defer --state prod-state
+          --vars '{dev_days_of_history: 7}'
+      - name: Publish dbt artifacts for this CI run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meridian-dbt-ci-${{ github.run_id }}
+          path: |
+            04_dbt_meridian_dw/target/manifest.json
+            04_dbt_meridian_dw/target/run_results.json
+      - name: Drop disposable CI schemas
+        if: always()
+        run: >-
+          dbt run-operation drop_ci_schemas
+          --args "{prefix: $DBT_SCHEMA}"
+          --target dev

@@ -1,0 +1,50 @@
+# Weekly dependency pull requests. Each one runs through the offline checks (pytest, dbt parse,
+# gitleaks, pip-audit) and the slim dbt CI before anyone merges it.
+#
+# dbt-core and dbt-snowflake always arrive in ONE pull request: an adapter built for a different
+# dbt-core line fails at parse time, so upgrading one without the other breaks the project.
+# Major versions of dbt are ignored here; those are planned upgrades, not weekly chores.
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    groups:
+      dbt:
+        patterns: ["dbt-core", "dbt-snowflake", "dbt-adapters"]
+      python-libraries:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "dbt-*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: pip
+    directory: "/05_airflow"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies, airflow]
+    groups:
+      dbt:
+        patterns: ["dbt-core", "dbt-snowflake", "dbt-adapters"]
+      python-libraries:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "dbt-*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, ci]
+    groups:
+      actions:
+        patterns: ["*"]

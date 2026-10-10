@@ -1,0 +1,80 @@
+# Explained copy only. The executable source of truth is
+# .github/workflows/meridian-checks.yml at the repository root.
+#
+# The fast gate: runs on EVERY pull request, needs NO warehouse and NO secrets, finishes in
+# about two minutes. It catches the mistakes that do not need data to be found:
+#   * Python logic (type mapping, leakage guard, time split, AUC gate)    -> pytest
+#   * a broken ref(), bad YAML, a contract with a missing column          -> dbt parse
+#   * SQL style drift                                                     -> sqlfluff
+#   * an invalid platform change                                          -> terraform validate
+#   * a committed credential, or a dependency with a known CVE           -> gitleaks, pip-audit
+# The slower dbt_ci.yml (warehouse, slim build) only runs after this is green.
+name: checks
+
+on:
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q tests
+
+  dbt-parse-and-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 04_dbt_meridian_dw
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r ../requirements.txt
+      - name: Offline profile (parse never connects)
+        run: |
+          mkdir -p ~/.dbt
+          printf 'meridian_dw:\n  target: prod\n  outputs:\n    prod:\n      type: snowflake\n      account: offline\n      user: offline\n      password: offline\n      role: MERIDIAN_TRANSFORMER\n      warehouse: WH_TRANSFORM_XS\n      database: MERIDIAN_ANALYTICS\n      schema: analytics\n      threads: 4\n' > ~/.dbt/profiles.yml
+      - run: dbt deps
+      - run: dbt parse --no-partial-parse --warn-error
+      - name: Lint SQL (style only; the templater renders Jinja without a connection)
+        run: sqlfluff lint models/intermediate/int_account_primary_holder.sql --dialect snowflake --templater jinja
+
+  # Two questions no other job asks: did anyone commit a credential, and does any library we
+  # install have a published vulnerability? fetch-depth 0 matters: a key deleted in a later
+  # commit is still in the history, and anyone who clones the repo can read it.
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan of the full git history (keys, tokens, passwords, webhook URLs)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - name: Known-vulnerability audit (PyPI advisory database) of both requirement files
+        run: pip-audit -r requirements.txt -r 05_airflow/requirements.txt
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 11_platform_terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate

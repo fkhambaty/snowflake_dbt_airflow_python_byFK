@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: omni_search
+    description: >
+      Serving index for identifier search. One row per searchable id (transaction id,
+      reference number, account number, account id, customer id, card authorization id).
+      Not a bus-matrix fact. Names and contact details are not indexed. Row access is
+      RAP_CUSTOMER_SCOPE on customer_id, so a fragment returns only rows the caller may see.
+      Search Optimization ON SUBSTRING(search_text) is added by 03_snowflake/07_omni_search.sql
+      after the first build. Queries must CONTAINS() or ILIKE the raw column, at least 4 characters.
+    columns:
+      - name: search_id
+        description: Surrogate of entity_type + entity_id + match_on. Merge key.
+        data_tests: [unique, not_null]
+      - name: entity_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['TRANSACTION', 'ACCOUNT', 'CUSTOMER', 'CARD_AUTHORIZATION']
+      - name: entity_id
+        data_tests: [not_null]
+      - name: match_on
+        description: Which identifier search_text holds. A transaction has two rows (id and reference number).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['TRANSACTION_ID', 'REFERENCE_NO', 'ACCOUNT_NUMBER', 'ACCOUNT_ID', 'CUSTOMER_ID', 'AUTHORIZATION_ID']
+      - name: search_text
+        description: Uppercased identifier. The only column Search Optimization is built on.
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= upper(search_text) and position('@' in search_text) = 0"
+      - name: customer_id
+        description: Entitlement key. Every row has one, so the row access policy can decide.
+        data_tests: [not_null]
+      - name: source_model
+        description: Which mart the identifier was copied from. This is the "across the platform" label.
+        data_tests: [not_null]
+
+exposures:
+  - name: meridian_semantic_app
+    label: Meridian governed semantic application
+    type: application
+    maturity: medium
+    description: >
+      Streamlit and Cortex Analyst client. The semantic view defines joins and metrics;
+      table row access and masking policies define what the signed-in user may see.
+    depends_on:
+      - ref('fct_transactions')
+      - ref('fct_card_applications')
+      - ref('fct_card_authorizations')
+      - ref('fct_next_best_offer')
+      - ref('dim_customer_current')
+      - ref('dim_branch')
+    owner:
+      name: FK
+      email: "{{ env_var('DBT_OWNER_EMAIL', 'not-provided') }}"
+
+  - name: meridian_omni_search
+    label: Governed identifier search
+    type: application
+    maturity: medium
+    description: Identifier search tab in the Meridian app; Search Optimization is the access path.
+    depends_on:
+      - ref('omni_search')
+    owner:
+      name: FK
+      email: "{{ env_var('DBT_OWNER_EMAIL', 'not-provided') }}"

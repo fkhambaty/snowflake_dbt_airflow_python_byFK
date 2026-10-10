@@ -1,0 +1,131 @@
+version: 2
+
+models:
+  - name: stg_postgres__deleted_records
+    description: Hard deletes captured by the Postgres trigger. Keyed by deleted_record_id.
+    columns:
+      - name: deleted_record_id
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__currencies
+    columns:
+      - name: currency_code
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__countries
+    columns:
+      - name: country_code
+        data_tests: [unique, not_null]
+      - name: local_currency_code
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_postgres__currencies')
+                field: currency_code
+
+  - name: stg_postgres__channels
+    columns:
+      - name: channel_id
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__products
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: product_category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["DEPOSIT", "LOAN", "CARD"]
+
+  - name: stg_postgres__fx_rates
+    description: One row per treasury close per currency pair. Latest restatement wins.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [rate_date, from_currency, to_currency]
+    columns:
+      - name: rate
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+
+  - name: stg_postgres__branches
+    columns:
+      - name: branch_id
+        data_tests: [unique, not_null]
+      - name: branch_code
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__employees
+    columns:
+      - name: employee_id
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__customers
+    description: Latest version of every customer, deletes removed.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["RETAIL", "PREMIUM", "PRIVATE", "SME"]
+      - name: home_branch_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_postgres__branches')
+                field: branch_id
+
+  - name: stg_postgres__accounts
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+      - name: account_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["ACTIVE", "DORMANT", "FROZEN", "CLOSED"]
+
+  - name: stg_postgres__account_holders
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [account_id, customer_id]
+    columns:
+      - name: holder_role
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PRIMARY", "JOINT", "AUTHORISED_SIGNATORY"]
+
+  - name: stg_postgres__loan_applications
+    columns:
+      - name: application_id
+        data_tests: [unique, not_null]
+
+  - name: stg_postgres__transactions
+    description: Incremental, deduplicated, typed transactions. Grain = one row per transaction_id (latest status).
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: amount
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PENDING", "POSTED", "REVERSED"]
+      - name: transaction_type
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('transaction_type_mapping')
+                field: transaction_type

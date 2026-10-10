@@ -1,0 +1,268 @@
+version: 2
+
+models:
+  # ------------------------------------------------------------------ dimensions
+  - name: dim_date
+    description: Conformed calendar dimension, integer yyyymmdd key, fiscal year April-March.
+    columns:
+      - name: date_key
+        data_tests: [unique, not_null]
+      - name: date_day
+        data_tests: [unique, not_null]
+
+  - name: dim_customer
+    description: SCD Type 2 customer dimension. One row per customer per version; is_current flags the live row.
+    config:
+      access: public
+      contract:
+        enforced: true
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [customer_id, valid_from]
+    columns:
+      - name: customer_key
+        data_type: varchar
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_type: number
+        data_tests: [not_null]
+      - {name: customer_number, data_type: varchar}
+      - {name: first_name, data_type: varchar}
+      - {name: last_name, data_type: varchar}
+      - {name: full_name, data_type: varchar}
+      - {name: date_of_birth, data_type: date}
+      - {name: gender, data_type: varchar}
+      - {name: email, data_type: varchar}
+      - {name: phone, data_type: varchar}
+      - {name: kyc_status, data_type: varchar}
+      - {name: segment, data_type: varchar}
+      - {name: risk_rating, data_type: varchar}
+      - {name: home_branch_id, data_type: number}
+      - {name: home_branch_code, data_type: varchar}
+      - {name: home_branch_name, data_type: varchar}
+      - {name: country_code, data_type: varchar}
+      - {name: country_name, data_type: varchar}
+      - {name: region, data_type: varchar}
+      - {name: city, data_type: varchar}
+      - {name: onboarded_at, data_type: timestamp_ntz}
+      - {name: age_years, data_type: number}
+      - {name: age_band, data_type: varchar}
+      - {name: tenure_months, data_type: number}
+      - name: valid_from
+        data_type: timestamp_ntz
+        data_tests: [not_null]
+      - name: valid_to
+        data_type: timestamp_ntz
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> valid_from"
+      - {name: is_current, data_type: boolean}
+      - {name: version_number, data_type: number}
+
+  - name: dim_account
+    description: SCD Type 2 account dimension (check strategy on status/branch/product/limits). Product attributes denormalised.
+    columns:
+      - name: account_key
+        data_tests: [unique, not_null]
+      - name: account_id
+        data_tests: [not_null]
+      - name: valid_to
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> valid_from"
+
+  - name: dim_branch
+    description: >
+      SCD Type 1 branch dimension with country attributes denormalised.
+      CONTRACTED: every downstream consumer (marts, the semantic view, the row access
+      policy on branch_id) depends on this shape. dbt refuses to build it if a column
+      is renamed, dropped or changes type, before anything downstream breaks.
+    config:
+      access: public
+      contract:
+        enforced: true
+    columns:
+      - name: branch_key
+        data_type: varchar
+        constraints: [{type: not_null}, {type: primary_key}]
+        data_tests: [unique]
+      - name: branch_id
+        data_type: number
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - {name: branch_code, data_type: varchar}
+      - {name: branch_name, data_type: varchar}
+      - {name: branch_type, data_type: varchar}
+      - {name: branch_status, data_type: varchar}
+      - {name: city, data_type: varchar}
+      - {name: state_region, data_type: varchar}
+      - {name: country_code, data_type: varchar}
+      - {name: country_name, data_type: varchar}
+      - {name: region, data_type: varchar}
+      - {name: local_currency_code, data_type: varchar}
+      - {name: local_timezone, data_type: varchar}
+      - {name: opened_date, data_type: date}
+      - {name: branch_age_years, data_type: number}
+
+  - name: dim_product
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+
+  - name: dim_channel
+    columns:
+      - name: channel_key
+        data_tests: [unique, not_null]
+
+  - name: dim_currency
+    columns:
+      - name: currency_key
+        data_tests: [unique, not_null]
+      - name: currency_code
+        data_tests: [unique, not_null]
+
+  - name: dim_employee
+    columns:
+      - name: employee_key
+        data_tests: [unique, not_null]
+
+  - name: dim_transaction_type
+    description: Junk dimension - transaction_type x status.
+    columns:
+      - name: transaction_type_key
+        data_tests: [unique, not_null]
+
+  - name: bridge_account_customer
+    description: Many-to-many bridge between accounts and customers (joint accounts) with weighting factor.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [account_id, customer_id]
+    columns:
+      - name: weighting_factor
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+                strictly: false
+
+  # ------------------------------------------------------------------ facts
+  - name: fct_transactions
+    description: >
+      Transaction fact at the atomic grain (one row per transaction, latest status). Local and
+      reporting-currency amounts at transaction-date rate. Incremental MERGE on transaction_id.
+    config:
+      access: public
+      contract:
+        enforced: true
+    columns:
+      - name: transaction_id
+        data_type: number
+        data_tests: [unique, not_null]
+      - name: date_key
+        data_type: number
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: account_key
+        data_type: varchar
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_key
+      - name: customer_key
+        data_type: varchar
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: branch_key
+        data_type: varchar
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_branch')
+                field: branch_key
+      - {name: product_key, data_type: varchar}
+      - {name: channel_key, data_type: varchar}
+      - {name: currency_key, data_type: varchar}
+      - name: transaction_type_key
+        data_type: varchar
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_transaction_type')
+                field: transaction_type_key
+      - {name: employee_key, data_type: varchar}
+      - {name: account_id, data_type: number}
+      - {name: customer_id, data_type: number}
+      - {name: branch_id, data_type: number}
+      - {name: currency_code, data_type: varchar}
+      - {name: transaction_type, data_type: varchar}
+      - {name: status, data_type: varchar}
+      - {name: transaction_ts, data_type: timestamp_ntz}
+      - {name: transaction_date, data_type: date}
+      - name: amount_local
+        data_type: "number(18,2)"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: amount_reporting
+        data_type: "number(18,2)"
+        description: Converted at the transaction-date FX rate. NULL only if the rate grid has a gap (tested in int_fx_rates_daily_filled).
+        data_tests:
+          - not_null:
+              config:
+                severity: warn       # a brand-new currency with no rate yet should not block the hot path
+      - {name: signed_amount_local, data_type: "number(18,2)"}
+      - {name: signed_amount_reporting, data_type: "number(18,2)"}
+      - {name: fx_rate_to_reporting, data_type: "number(38,10)"}
+      - name: fx_is_forward_filled
+        data_type: boolean
+        description: True when the rate used was carried forward from a previous business day.
+      - {name: is_credit, data_type: boolean}
+      - {name: transaction_count, data_type: number}
+      - {name: reference_no, data_type: varchar}
+      - {name: counterparty_account, data_type: varchar}
+      - {name: merchant_category, data_type: varchar}
+      - {name: source_updated_at, data_type: timestamp_ntz}
+      - {name: _extracted_at, data_type: timestamp_ntz}
+      - {name: inserted_at, data_type: timestamp_ntz}
+      - {name: dbt_updated_at, data_type: timestamp_ntz}
+
+  - name: fct_fx_rates_daily
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, currency_code]
+
+  - name: fct_monthly_account_balance
+    description: Periodic snapshot - account x month-end closing balance in local currency and at period-end FX.
+    columns:
+      - name: account_balance_key
+        data_tests: [unique, not_null]
+      - name: closing_balance_local
+        data_tests: [not_null]
+
+  - name: fct_loan_applications
+    description: Accumulating snapshot - one row per application with milestone date keys and lag measures.
+    columns:
+      - name: application_id
+        data_tests: [unique, not_null]
+      - name: days_to_decision
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                row_condition: "days_to_decision is not null"

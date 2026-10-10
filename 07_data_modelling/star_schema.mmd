@@ -1,0 +1,69 @@
+%% Star schema around fct_transactions — paste into https://mermaid.live
+erDiagram
+    dim_date ||--o{ fct_transactions : date_key
+    dim_customer ||--o{ fct_transactions : "customer_key (SCD2 PIT)"
+    dim_account ||--o{ fct_transactions : "account_key (SCD2 PIT)"
+    dim_branch ||--o{ fct_transactions : branch_key
+    dim_product ||--o{ fct_transactions : product_key
+    dim_channel ||--o{ fct_transactions : channel_key
+    dim_currency ||--o{ fct_transactions : currency_key
+    dim_transaction_type ||--o{ fct_transactions : transaction_type_key
+    dim_employee ||--o{ fct_transactions : employee_key
+    dim_account ||--o{ bridge_account_customer : account_id
+    dim_customer ||--o{ bridge_account_customer : customer_id
+
+    fct_transactions {
+        bigint transaction_id PK "degenerate dim"
+        int date_key FK
+        string account_key FK
+        string customer_key FK
+        string branch_key FK
+        string product_key FK
+        string channel_key FK
+        string currency_key FK
+        string transaction_type_key FK
+        string employee_key FK
+        numeric amount_local
+        numeric amount_reporting "at txn-date rate"
+        numeric fx_rate_to_reporting
+        numeric signed_amount_local
+        boolean is_credit
+        string reference_no "degenerate dim"
+    }
+    dim_customer {
+        string customer_key PK "md5(customer_id, valid_from)"
+        bigint customer_id "natural key"
+        string segment
+        string kyc_status
+        string risk_rating
+        timestamp valid_from
+        timestamp valid_to "9999-12-31 if current"
+        boolean is_current
+    }
+    dim_account {
+        string account_key PK
+        bigint account_id
+        string account_status
+        string product_type "denormalised"
+        timestamp valid_from
+        timestamp valid_to
+        boolean is_current
+    }
+    bridge_account_customer {
+        bigint account_id
+        bigint customer_id
+        string holder_role
+        numeric weighting_factor "1 / holder_count"
+    }
+    dim_transaction_type {
+        string transaction_type_key PK
+        string transaction_type
+        string direction
+        string status "junk dim: type x status"
+    }
+    dim_date {
+        int date_key PK "yyyymmdd"
+        date date_day
+        int fiscal_year
+        boolean is_business_day
+    }
