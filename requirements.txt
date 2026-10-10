@@ -10,7 +10,7 @@ scikit-learn>=1.4         # card decision, propensity, fraud scores (09_decision
 # Transformation
 dbt-core>=1.10           # unit_tests, contracts, grants
 dbt-snowflake>=1.9
-sqlfluff>=3.0
+sqlfluff>=4.4.0
 sqlfluff-templater-dbt>=3.0
 
 # Optional: the English app on a laptop (Snowsight does not need this)
