@@ -2,8 +2,6 @@
 
 The runnable code for the Meridian Bank series. Clone this repository and follow the folders in number order. You do not need to copy code out of the video.
 
-The lessons, the episode list, and the design decisions are in [DataEngineeringAndAnalyticsByFK](https://github.com/fkhambaty/DataEngineeringAndAnalyticsByFK). Open `course/index.html` from that repository in a browser.
-
 Meridian is a fictional bank: 520 branches, 5 currencies, retail accounts, and credit cards. The path is PostgreSQL → Python → Parquet → Snowflake → dbt → Airflow.
 
 ## What each folder is
