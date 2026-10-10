@@ -9,7 +9,7 @@ Micro-batch replication: PostgreSQL  ->  Parquet  ->  Snowflake internal stage  
     python pg_to_snowflake.py --tables core.transactions \
         --since 2026-09-01T00:00:00Z --until 2026-09-02T00:00:00Z  # replay, watermark unchanged
 
-Design (each point is a teaching moment, see course/COURSE_GUIDE_TEXT.html -> Module 4):
+Design (start with 02_ingestion_python/00_python_foundations, then read this flow):
 
   1. WATERMARK CDC   : pull rows WHERE cursor > last_watermark AND cursor <= now() - lag.
                        The lag protects against long-running source transactions whose

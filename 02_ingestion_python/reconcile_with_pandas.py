@@ -9,7 +9,8 @@ tool that can hold BOTH systems in memory and compare them. That is a DataFrame 
     python reconcile_with_pandas.py --days 30 --by branch
 
 Checks performed
-  1. Row counts per day/currency (or branch):  Postgres core.transactions  vs  MARTS.FCT_TRANSACTIONS
+  1. Row counts per day/currency (or branch), using one shared two-minute cutoff:
+     Postgres core.transactions vs MARTS.FCT_TRANSACTIONS
   2. Sum of POSTED amounts in local currency
   3. Lag: newest transaction_ts in Postgres vs newest in Snowflake  (= end-to-end freshness)
 
@@ -25,6 +26,7 @@ import os
 import sys
 import uuid
 import warnings
+from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 import psycopg2
@@ -39,7 +41,7 @@ ANALYTICS_DB = "MERIDIAN_ANALYTICS"
 MARTS_SCHEMA = "MARTS"
 
 
-def source_frame(days: int, by: str) -> pd.DataFrame:
+def source_frame(window_start: date, cutoff: datetime, by: str) -> pd.DataFrame:
     dim = "a.branch_id" if by == "branch" else "t.currency_code"
     sql = f"""
         SELECT (t.transaction_ts AT TIME ZONE 'UTC')::date AS txn_date,
@@ -52,15 +54,15 @@ def source_frame(days: int, by: str) -> pd.DataFrame:
         -- Compare the same complete UTC calendar dates that the Snowflake query uses.
         -- A rolling timestamp cutoff would compare only part of the oldest day in Postgres
         -- against the whole oldest day in Snowflake.
-        WHERE (t.transaction_ts AT TIME ZONE 'UTC')::date >= current_date - {days}
-          AND t.updated_at <= now() - interval '2 minutes'   -- give the pipeline a fair chance
+        WHERE (t.transaction_ts AT TIME ZONE 'UTC')::date >= %s
+          AND t.updated_at <= %s
         GROUP BY 1, 2
     """
     with psycopg2.connect(PG.dsn()) as conn:
-        return pd.read_sql_query(sql, conn)
+        return pd.read_sql_query(sql, conn, params=(window_start, cutoff))
 
 
-def warehouse_frame(days: int, by: str) -> pd.DataFrame:
+def warehouse_frame(window_start: date, cutoff: datetime, by: str) -> pd.DataFrame:
     dim = "f.branch_id" if by == "branch" else "f.currency_code"
     sql = f"""
         SELECT f.transaction_date                                      AS txn_date,
@@ -69,7 +71,8 @@ def warehouse_frame(days: int, by: str) -> pd.DataFrame:
                sum(iff(f.status = 'POSTED', f.amount_local, 0))        AS wh_posted_amount,
                max(f.transaction_ts)                                   AS wh_max_ts
         FROM {ANALYTICS_DB}.{MARTS_SCHEMA}.FCT_TRANSACTIONS f
-        WHERE f.transaction_date >= dateadd('day', -{days}, current_date())
+        WHERE f.transaction_date >= %s
+          AND f.source_updated_at <= %s
         GROUP BY 1, 2
     """
     conn = sf_connect(
@@ -80,7 +83,7 @@ def warehouse_frame(days: int, by: str) -> pd.DataFrame:
     )
     try:
         cur = conn.cursor()
-        cur.execute(sql)
+        cur.execute(sql, (window_start, cutoff))
         df = cur.fetch_pandas_all()
     finally:
         conn.close()
@@ -150,10 +153,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--by", choices=["currency", "branch"], default="currency")
     parser.add_argument("--record", action="store_true", help="append the outcome to CONTROL.RECONCILIATION_RUNS")
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
+    if args.days < 1:
+        parser.error("--days must be at least 1")
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    src = source_frame(args.days, args.by)
-    wh = warehouse_frame(args.days, args.by)
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=2)
+    window_start = cutoff.date() - timedelta(days=args.days - 1)
+    src = source_frame(window_start, cutoff, args.by)
+    wh = warehouse_frame(window_start, cutoff, args.by)
     result = reconcile(src, wh)
 
     pd.set_option("display.width", 200)

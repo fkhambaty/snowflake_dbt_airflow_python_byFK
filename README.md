@@ -9,7 +9,7 @@ Meridian is a fictional bank: 520 branches, 5 currencies, retail accounts, and c
 | Folder | What you run |
 |---|---|
 | `01_source_postgres/` | The bank database. Execute the SQL files in the order below. |
-| `02_ingestion_python/` | The extractor. It reads what changed, writes Parquet, and loads Snowflake. |
+| `02_ingestion_python/` | Four beginner Python lessons, then the extractor, Parquet loading, simulation, and reconciliation. |
 | `03_snowflake/` | Warehouses, roles, raw tables, row access, and masking. Run in Snowsight. |
 | `04_dbt_meridian_dw/` | Staging, the star schema, tests, and the public marts. |
 | `05_airflow/` | The 5-minute load, the daily batch, and the freshness check. |
@@ -29,6 +29,14 @@ cd snowflake_dbt_airflow_python_byFK
 
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt pytest
+
+# New to Python? Run these before the real pipeline.
+python 02_ingestion_python/00_python_foundations/01_values_and_decisions.py
+python 02_ingestion_python/00_python_foundations/02_loops_and_functions.py
+python 02_ingestion_python/00_python_foundations/03_collections_paths_libraries.py
+# This one deliberately exits 1 to demonstrate a failed quality gate.
+python 02_ingestion_python/00_python_foundations/04_mini_reconciliation.py || true
+
 pytest -q tests
 ```
 
