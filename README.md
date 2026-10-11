@@ -16,7 +16,7 @@ Meridian is a fictional bank: 520 branches, 5 currencies, retail accounts, and c
 | `05_airflow/` | The 5-minute load, the daily batch, and the freshness check. |
 | `06_performance_lab/` | Queries that are slow on purpose, then the fix, with the numbers. |
 | `07_data_modelling/` | The bus matrix and the diagrams the models follow. |
-| `08_ci_cd/` | What the GitHub checks are for. The checks themselves are in `.github/workflows/`. |
+| `.github/workflows/` | The checks that run when code changes. |
 | `09_decisioning_python/` | Train the card model from the gold features and write the scores back. |
 | `10_semantic_app/` | Ask the warehouse a question in English. Row access still applies. |
 | `11_platform_terraform/` | The same Snowflake roles and warehouses as code. |
