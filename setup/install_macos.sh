@@ -49,6 +49,7 @@ Next:
    python3 setup/verify_setup.py
    python3 setup/start_postgres.py
 
+Next, continue at setup/MACOS_SETUP.md.
 Astro CLI is installed in the Airflow episode, when it is first needed.
 Snowflake is a browser account and is created in the Snowflake episode.
 EOF

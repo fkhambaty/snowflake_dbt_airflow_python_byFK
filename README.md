@@ -29,7 +29,13 @@ git clone https://github.com/fkhambaty/snowflake_dbt_airflow_python_byFK.git
 cd snowflake_dbt_airflow_python_byFK
 ```
 
-Follow [`setup/README.md`](setup/README.md). The short path is:
+Choose the instructions for your computer:
+
+- [macOS setup](setup/MACOS_SETUP.md)
+- [Windows 10/11 setup](setup/WINDOWS_SETUP.md)
+
+[`setup/README.md`](setup/README.md) is the short cross-platform reference. The short
+path is:
 
 ```bash
 # macOS

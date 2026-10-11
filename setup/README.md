@@ -1,7 +1,13 @@
-# Student setup: one path, checked at every step
+# Student setup: choose your operating system
 
-These scripts prepare the local tools used by the course. They do not ask for, create,
-or store Snowflake credentials.
+Use the full instructions for your computer:
+
+- **macOS:** [`MACOS_SETUP.md`](MACOS_SETUP.md)
+- **Windows 10/11:** [`WINDOWS_SETUP.md`](WINDOWS_SETUP.md)
+
+Those two files list the complete course toolset, explain what is installed now versus
+later, and provide every command in order. The summary below is the short reference.
+The scripts do not ask for, create, or store Snowflake credentials.
 
 ## 1. Get this repository
 

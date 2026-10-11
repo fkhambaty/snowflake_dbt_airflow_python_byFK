@@ -32,3 +32,19 @@ def test_setup_readme_names_both_supported_commands():
 
     assert "python3 setup/start_postgres.py" in guide
     assert r"py -3.12 setup\start_postgres.py" in guide
+
+
+def test_each_operating_system_has_a_complete_setup_guide():
+    mac = (ROOT / "setup" / "MACOS_SETUP.md").read_text()
+    windows = (ROOT / "setup" / "WINDOWS_SETUP.md").read_text()
+
+    for guide in (mac, windows):
+        assert "Docker Desktop" in guide
+        assert "Python 3.12" in guide
+        assert "DBeaver Community" in guide
+        assert "dbt Core" in guide
+        assert "Astro CLI" in guide
+        assert "Snowflake Snowsight" in guide
+
+    assert "bash setup/install_macos.sh" in mac
+    assert r".\setup\install_windows.ps1" in windows

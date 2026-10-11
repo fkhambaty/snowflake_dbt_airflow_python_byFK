@@ -3,7 +3,13 @@
 Astro CLI is the fastest way to run a clean Airflow 3 locally with Docker:
 
 ```bash
-brew install astro                      # https://www.astronomer.io/docs/astro/cli/install-cli
+# macOS: keep using the Docker Desktop already installed for this course.
+brew tap astronomer/tap
+brew install astronomer/tap/astro --without-podman
+
+# Windows Administrator PowerShell:
+# winget install -e --id Astronomer.Astro --skip-dependencies
+
 cd 05_airflow
 mkdir -p .astro
 test -f .astro/config.yaml || printf 'project:\n    name: meridian\n' > .astro/config.yaml
