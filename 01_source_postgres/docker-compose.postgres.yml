@@ -8,6 +8,12 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meridian -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
     command:
       # wal_level=logical is not needed for our watermark CDC, but it lets you demo
       # logical replication / Debezium as the "production grade" alternative.

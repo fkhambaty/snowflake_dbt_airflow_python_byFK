@@ -8,7 +8,8 @@ Meridian is a fictional bank: 520 branches, 5 currencies, retail accounts, and c
 
 | Folder | What you run |
 |---|---|
-| `01_source_postgres/` | The bank database. Execute the SQL files in the order below. |
+| `setup/` | macOS/Windows installers, setup verifier, and the checked PostgreSQL build. Start here. |
+| `01_source_postgres/` | The bank database SQL. The setup script executes it in the required order. |
 | `02_ingestion_python/` | Four beginner Python lessons, then the extractor, Parquet loading, simulation, and reconciliation. |
 | `03_snowflake/` | Warehouses, roles, raw tables, row access, and masking. Run in Snowsight. |
 | `04_dbt_meridian_dw/` | Staging, the star schema, tests, and the public marts. |
@@ -26,6 +27,32 @@ Meridian is a fictional bank: 520 branches, 5 currencies, retail accounts, and c
 ```bash
 git clone https://github.com/fkhambaty/snowflake_dbt_airflow_python_byFK.git
 cd snowflake_dbt_airflow_python_byFK
+```
+
+Follow [`setup/README.md`](setup/README.md). The short path is:
+
+```bash
+# macOS
+bash setup/install_macos.sh
+
+# Windows Administrator PowerShell
+.\setup\install_windows.ps1
+
+# Open Docker Desktop, wait for its engine, then verify and build the source.
+python3 setup/verify_setup.py
+python3 setup/start_postgres.py
+```
+
+On Windows, use `py -3.12` instead of `python3`.
+
+The source script starts PostgreSQL 16, creates `meridian_core`, executes all source SQL
+in the checked order, loads five million transactions, installs the simulators, and
+prints the final counts. DBeaver connects to `localhost:5432`, database
+`meridian_core`, username `meridian`, password `meridian`.
+
+## Python lessons and tests
+
+```bash
 
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt pytest
@@ -38,23 +65,6 @@ python 02_ingestion_python/00_python_foundations/03_collections_paths_libraries.
 python 02_ingestion_python/00_python_foundations/04_mini_reconciliation.py || true
 
 pytest -q tests
-```
-
-Postgres, in DBeaver. Start the database, connect to `localhost:5432` as user `meridian`, password `meridian`, database `postgres`, and execute `01_source_postgres/00_create_database.sql`. Then connect to database `meridian_core` and execute these files in order:
-
-1. `01_ddl_core_schema.sql`
-2. `02_seed_reference_data.sql`
-3. `03_seed_bulk_data.sql`
-4. `07_ddl_cards.sql`
-5. `04_cdc_triggers.sql`
-6. `05_dml_simulator_functions.sql`
-7. `08_seed_cards.sql`
-8. `09_card_simulator.sql`
-
-Start Postgres with:
-
-```bash
-docker compose -f 01_source_postgres/docker-compose.postgres.yml up -d
 ```
 
 Snowflake. In Snowsight, as ACCOUNTADMIN, run `03_snowflake/01`, then `02`, then `03`. Run the later scripts in that folder in numeric order when the lesson reaches them. `11_platform_terraform/` builds the same platform objects if you prefer Terraform.
