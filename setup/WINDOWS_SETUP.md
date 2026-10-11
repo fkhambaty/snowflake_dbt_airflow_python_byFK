@@ -10,7 +10,7 @@ The setup is deliberately split so you install each tool only when it becomes us
 ### Installed now
 
 - **Git** — downloads and versions the project.
-- **Cursor** — opens and edits SQL, Python, YAML and Terraform files.
+- **Visual Studio Code** — opens and edits SQL, Python, YAML and Terraform files.
 - **Python 3.12** — runs the loader, reconciliation, tests and data app.
 - **Docker Desktop + Docker Compose** — runs the local containers through WSL 2.
 - **DBeaver Community** — lets you inspect and query the local source.

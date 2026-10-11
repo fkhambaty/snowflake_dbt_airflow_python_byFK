@@ -56,7 +56,8 @@ def desktop_app_exists(names: tuple[str, ...]) -> bool:
             program_files / "DBeaver" / "dbeaver.exe",
             program_files / "DBeaver Community" / "dbeaver.exe",
             local_app_data / "Programs" / "DBeaver" / "dbeaver.exe",
-            local_app_data / "Programs" / "cursor" / "Cursor.exe",
+            program_files / "Microsoft VS Code" / "Code.exe",
+            local_app_data / "Programs" / "Microsoft VS Code" / "Code.exe",
         ]
         lowered = {name.lower() for name in names}
         return any(
@@ -85,11 +86,13 @@ def main() -> int:
             else "desktop application not found",
         ),
         Check(
-            "Cursor or compatible editor",
-            desktop_app_exists(("Cursor", "cursor")) or shutil.which("code") is not None,
+            "Visual Studio Code",
+            desktop_app_exists(("Visual Studio Code", "VS Code", "Code"))
+            or shutil.which("code") is not None,
             "editor found"
-            if desktop_app_exists(("Cursor", "cursor")) or shutil.which("code")
-            else "optional: install Cursor or use another VS Code-compatible editor",
+            if desktop_app_exists(("Visual Studio Code", "VS Code", "Code"))
+            or shutil.which("code")
+            else "optional: install Visual Studio Code or use another editor",
             required=False,
         ),
     ]

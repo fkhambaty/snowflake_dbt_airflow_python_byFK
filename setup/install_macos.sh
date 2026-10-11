@@ -28,7 +28,7 @@ echo "Installing command-line tools..."
 brew install git python@3.12 terraform
 
 echo "Installing desktop applications..."
-for app in docker dbeaver-community cursor; do
+for app in docker dbeaver-community visual-studio-code; do
   if ! brew list --cask "$app" >/dev/null 2>&1; then
     brew install --cask "$app"
   else

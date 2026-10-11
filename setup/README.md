@@ -25,7 +25,7 @@ open Terminal or PowerShell inside the extracted folder.
 
 ### macOS
 
-The script uses Homebrew and installs Docker Desktop, DBeaver Community, Cursor,
+The script uses Homebrew and installs Docker Desktop, DBeaver Community, Visual Studio Code,
 Python 3.12, Git, and Terraform.
 
 ```bash
@@ -45,7 +45,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\setup\install_windows.ps1
 ```
 
-The script uses `winget` to install Docker Desktop, DBeaver Community, Cursor,
+The script uses `winget` to install Docker Desktop, DBeaver Community, Visual Studio Code,
 Python 3.12, Git, and Terraform. Restart Windows after Docker Desktop requests it.
 Docker Desktop must be configured to use WSL 2.
 
@@ -69,8 +69,8 @@ On Windows, if `python3` is not recognised:
 py -3.12 setup\verify_setup.py
 ```
 
-Every required row must say `PASS`. Cursor is convenient but optional; any
-VS Code-compatible editor can edit the files.
+Every required row must say `PASS`. Visual Studio Code is convenient but optional; any
+compatible editor can edit the files.
 
 ## 4. Build the PostgreSQL source automatically
 

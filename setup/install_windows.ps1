@@ -12,7 +12,7 @@ $packages = @(
     @{ Id = "Python.Python.3.12"; Name = "Python 3.12" },
     @{ Id = "Docker.DockerDesktop"; Name = "Docker Desktop" },
     @{ Id = "dbeaver.dbeaver"; Name = "DBeaver Community" },
-    @{ Id = "Anysphere.Cursor"; Name = "Cursor" },
+    @{ Id = "Microsoft.VisualStudioCode"; Name = "Visual Studio Code" },
     @{ Id = "Hashicorp.Terraform"; Name = "Terraform" }
 )
 
