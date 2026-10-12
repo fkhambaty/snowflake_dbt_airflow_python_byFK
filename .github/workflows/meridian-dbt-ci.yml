@@ -25,8 +25,8 @@ jobs:
       run:
         working-directory: 04_dbt_meridian_dw
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -48,7 +48,7 @@ jobs:
           --vars '{dev_days_of_history: 7}'
       - name: Publish dbt artifacts for this CI run
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: meridian-dbt-ci-${{ github.run_id }}
           path: |
