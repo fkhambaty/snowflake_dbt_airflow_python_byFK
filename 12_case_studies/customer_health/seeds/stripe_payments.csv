@@ -1,0 +1,19 @@
+record_label,source_row_id,payment_id,invoice_id,payment_kind,status,amount,updated_at,loaded_at
+SYNTHETIC,1,pay_inv_sub_A1_aug,inv_sub_A1_aug,charge,succeeded,1000,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,2,pay_inv_sub_A1_sep,inv_sub_A1_sep,charge,succeeded,1000,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,3,pay_inv_sub_A2_aug_charge,inv_sub_A2_aug,charge,succeeded,200,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,4,pay_inv_sub_A2_aug_refund,inv_sub_A2_aug,refund,succeeded,200,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,5,pay_inv_sub_A2_sep_charge,inv_sub_A2_sep,charge,succeeded,200,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,6,pay_inv_sub_A2_sep_refund,inv_sub_A2_sep,refund,succeeded,200,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,7,pay_inv_sub_B2_aug,inv_sub_B2_aug,charge,failed,500,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,8,pay_inv_sub_B2_sep,inv_sub_B2_sep,charge,failed,500,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,9,pay_inv_sub_D1_aug,inv_sub_D1_aug,charge,succeeded,100,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,10,pay_inv_sub_D1_sep,inv_sub_D1_sep,charge,succeeded,100,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,11,pay_inv_sub_E1_aug,inv_sub_E1_aug,charge,succeeded,400,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,12,pay_inv_sub_E1_sep,inv_sub_E1_sep,charge,succeeded,400,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,13,pay_inv_sub_X1_aug,inv_sub_X1_aug,charge,succeeded,999,2026-08-16 00:00:00,2026-08-16 00:00:00
+SYNTHETIC,14,pay_inv_sub_X1_sep,inv_sub_X1_sep,charge,succeeded,999,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,15,pay_inv_B1,inv_B1,charge,succeeded,12000,2026-01-16 00:00:00,2026-01-16 00:00:00
+SYNTHETIC,16,pay_inv_C1,inv_C1,charge,succeeded,300,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,17,pay_inv_A_tax,inv_A_tax,charge,succeeded,80,2026-09-16 00:00:00,2026-09-16 00:00:00
+SYNTHETIC,18,pay_inv_A_oneoff,inv_A_oneoff,charge,succeeded,500,2026-09-16 00:00:00,2026-09-16 00:00:00

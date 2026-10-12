@@ -1,0 +1,5 @@
+record_label,salesforce_account_id,observation_snapshot_date,churned_within_30d,label_note
+SYNTHETIC,SF-001,2026-09-01,0,retained
+SYNTHETIC,SF-002,2026-09-01,1,cancelled
+SYNTHETIC,SF-004,2026-09-01,0,retained
+SYNTHETIC,SF-005,2026-09-01,1,cancelled_while_medium

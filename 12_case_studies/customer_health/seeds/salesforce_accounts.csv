@@ -1,0 +1,8 @@
+record_label,source_row_id,salesforce_account_id,account_name,csm_name,csm_email,segment,region,product,onboarded_date,created_date,status,updated_at,loaded_at
+SYNTHETIC,1,SF-001,Northwind Inc,Casey Morgan,casey.morgan@acmecloud.example,Legacy,NA,Platform,2025-01-15,2025-01-15,customer,2026-01-01 00:00:00,2026-01-01 00:00:00
+SYNTHETIC,2,SF-001,Northwind Labs,Casey Morgan,casey.morgan@acmecloud.example,Mid-Market,NA,Platform,2025-01-15,2025-01-15,customer,2026-06-01 00:00:00,2026-06-01 00:00:00
+SYNTHETIC,3,SF-002,Brightline Health,Priya Shah,priya.shah@acmecloud.example,Enterprise,NA,Platform,2024-03-01,2024-03-01,customer,2026-08-01 00:00:00,2026-08-01 00:00:00
+SYNTHETIC,4,SF-003,Newly Co,Priya Shah,priya.shah@acmecloud.example,SMB,EU,Billing,2026-09-15,2026-09-10,customer,2026-09-10 12:00:00,2026-09-10 12:00:00
+SYNTHETIC,5,SF-004,Northwind Labs,Casey Morgan,casey.morgan@acmecloud.example,SMB,NA,Billing,2025-04-01,2025-04-01,customer,2026-08-01 00:00:00,2026-08-01 00:00:00
+SYNTHETIC,6,SF-005,Medium Co,Casey Morgan,casey.morgan@acmecloud.example,Mid-Market,APAC,Platform,2025-06-01,2025-06-01,customer,2026-08-01 00:00:00,2026-08-01 00:00:00
+SYNTHETIC,7,SF-006,Harbour Prospect,Casey Morgan,casey.morgan@acmecloud.example,SMB,NA,Platform,2025-01-01,2025-01-01,prospect,2026-08-01 00:00:00,2026-08-01 00:00:00

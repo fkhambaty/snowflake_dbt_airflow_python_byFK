@@ -1,0 +1,6 @@
+record_label,source_row_id,ticket_id,zendesk_org_id,severity,status,created_at,updated_at,loaded_at
+SYNTHETIC,1,tA1,zd_A,urgent,open,2026-08-20 15:00:00,2026-08-20 10:00:00,2026-08-20 11:00:00
+SYNTHETIC,2,tA1,zd_A,low,solved,2026-08-20 15:00:00,2026-08-21 10:00:00,2026-08-21 11:00:00
+SYNTHETIC,3,tB1,zd_B,urgent,open,2026-08-02 15:00:00,2026-08-02 16:00:00,2026-08-02 16:00:00
+SYNTHETIC,4,tB2,zd_B,urgent,open,2026-08-02 15:00:00,2026-08-02 16:00:00,2026-08-02 16:00:00
+SYNTHETIC,5,tB3,zd_B,high,open,2026-09-01 15:00:00,2026-09-01 16:00:00,2026-09-01 16:00:00

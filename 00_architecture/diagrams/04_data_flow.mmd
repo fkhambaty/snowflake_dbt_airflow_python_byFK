@@ -1,0 +1,15 @@
+%% Data flow for one change, from the teller to the person asking.
+%% Practical descendant of a data-flow diagram: process, store, flow. No physical types.
+flowchart TD
+  teller["Teller posts or updates a transaction"]
+  hook["Trigger sets updated_at, or logs a delete"]
+  poll["Every 5 minutes: read rows changed since the watermark"]
+  land["Append the raw payload. Do not update it in place."]
+  shape["Deduplicate, type, drop deleted keys"]
+  star["Attach the customer and account version that was true at that moment. Convert currency at that day's rate."]
+  index["Copy the identifier onto the search index"]
+  ask["Person types part of an id, or asks in English"]
+  gate["Row access policy keeps rows they are not entitled to"]
+
+  teller --> hook --> poll --> land --> shape --> star --> index --> ask --> gate
+  star --> ask

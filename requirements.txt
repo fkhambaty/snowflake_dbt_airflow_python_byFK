@@ -6,6 +6,7 @@ snowflake-connector-python[pandas]>=3.12
 python-dotenv>=1.0
 cryptography>=42.0        # key-pair auth for the Snowflake service user
 scikit-learn>=1.4         # card decision, propensity, fraud scores (09_decisioning_python)
+duckdb>=1.1               # offline customer-health interview case (12_case_studies)
 
 # Transformation
 dbt-core>=1.10           # unit_tests, contracts, grants

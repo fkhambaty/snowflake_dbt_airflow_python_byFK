@@ -1,0 +1,10 @@
+record_label,source_row_id,subscription_id,stripe_customer_id,currency_code,billing_interval,unit_amount,status,start_date,end_date,updated_at,loaded_at
+SYNTHETIC,1,sub_A1,cus_A,USD,month,99999,active,2025-01-15,,2026-01-01 00:00:00,2026-01-01 00:00:00
+SYNTHETIC,2,sub_A1,cus_A,USD,month,1000,active,2025-01-15,,2026-02-01 00:00:00,2026-02-01 00:00:00
+SYNTHETIC,3,sub_A2,cus_A,USD,month,200,active,2025-01-15,,2026-02-01 00:00:00,2026-02-01 00:00:00
+SYNTHETIC,4,sub_B1,cus_B,EUR,year,12000,active,2026-01-15,,2026-01-16 00:00:00,2026-01-16 00:00:00
+SYNTHETIC,5,sub_B2,cus_B,USD,month,500,active,2025-06-01,,2026-06-01 00:00:00,2026-06-01 00:00:00
+SYNTHETIC,6,sub_C1,cus_C,USD,month,300,active,2026-09-15,,2026-09-15 00:00:00,2026-09-15 00:00:00
+SYNTHETIC,7,sub_D1,cus_D,USD,month,100,active,2025-04-01,,2026-04-01 00:00:00,2026-04-01 00:00:00
+SYNTHETIC,8,sub_E1,cus_E,USD,month,400,active,2025-06-01,,2026-06-01 00:00:00,2026-06-01 00:00:00
+SYNTHETIC,9,sub_X1,cus_ORPHAN,USD,month,999,active,2025-01-01,,2026-01-01 00:00:00,2026-01-01 00:00:00

@@ -1,0 +1,24 @@
+%% C4 container diagram. Standard: C4 Level 2.
+%% One box per deployable or data store. Arrows are labelled with what moves, not with a tool slogan.
+flowchart LR
+  oltp["PostgreSQL<br/>OLTP, 3NF"]
+  extract["Python extractor<br/>watermark, Parquet"]
+  raw["Snowflake RAW<br/>VARIANT, append-only"]
+  dbt["dbt<br/>staging, marts, tests, grants"]
+  marts["Snowflake MARTS<br/>Kimball stars"]
+  search["omni_search<br/>one row per identifier"]
+  semantic["Semantic view"]
+  app["Streamlit app<br/>ask, or find an id"]
+  train["Python training<br/>AUC gate"]
+  scores["RAW.ML<br/>runs and scores"]
+  airflow["Airflow<br/>schedule only"]
+  tf["Terraform<br/>roles, warehouses, cost guard"]
+
+  oltp --> extract --> raw --> dbt --> marts
+  marts --> search --> app
+  marts --> semantic --> app
+  marts --> train --> scores --> dbt
+  airflow -.-> extract
+  airflow -.-> dbt
+  airflow -.-> train
+  tf -.-> raw

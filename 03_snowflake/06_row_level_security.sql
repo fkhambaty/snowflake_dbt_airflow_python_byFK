@@ -16,6 +16,10 @@
 --    CUSTOMER        their own rows; no branch totals, no other customers
 --    not in APP_USER allowed only with MERIDIAN_TRANSFORMER / ANALYST / ML in session;
 --                    everyone else is denied (the Streamlit owner role included)
+--  Country proof (end of this file). A country_code column is not a security boundary.
+--  RAP_COUNTRY_SCOPE is. The Hong Kong user sees HK only. An unentitled user with the
+--  same role sees zero rows. That role has no grant on MERIDIAN_RAW. Staff contact
+--  fields stay masked. The branch and customer policies in this file are not rewritten.
 -- =====================================================================================
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE WH_BI_XS;
@@ -29,15 +33,22 @@ CREATE TABLE IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER (
     persona         STRING NOT NULL,     -- CEO | BRANCH_MANAGER | STAFF | CUSTOMER
     branch_id       NUMBER,
     customer_id     NUMBER,
+    country_code    STRING,          -- country personas only. Branch personas stay NULL.
     granted_by      STRING DEFAULT CURRENT_USER(),
     granted_at      TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
+
+-- Existing accounts already have the table. CREATE IF NOT EXISTS will not add the column.
+ALTER TABLE MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+  ADD COLUMN IF NOT EXISTS country_code STRING;
 
 -- ------------------------------------------------------------------ row access policies
 -- IF NOT EXISTS on purpose. A policy attached to tables cannot be replaced, and dropping
 -- it would expose every row until it is re-attached. The ALTER below updates the body
 -- of a policy that is already attached.
 --
+-- Country isolation is a separate policy at the end of this file. These three policies
+-- stay on branch_id and customer_id so the Mumbai personas keep their rows.
 -- A policy body cannot contain a JOIN. Branch managers are matched with a scalar lookup
 -- of their branch, then an EXISTS against ENT_CUSTOMER_BRANCH. Subqueries run with the
 -- policy owner's privileges, so personas never need SELECT on those tables.
@@ -148,17 +159,17 @@ CREATE TAG IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.PII
 CREATE MASKING POLICY IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_STRING
 AS (v STRING) RETURNS STRING ->
     CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
-                      WHERE snowflake_user = CURRENT_USER() AND persona = 'STAFF')
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
          THEN '***' ELSE v END;
 CREATE MASKING POLICY IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_NUMBER
 AS (v NUMBER(18, 2)) RETURNS NUMBER(18, 2) ->
     CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
-                      WHERE snowflake_user = CURRENT_USER() AND persona = 'STAFF')
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
          THEN NULL ELSE v END;
 CREATE MASKING POLICY IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_DATE
 AS (v DATE) RETURNS DATE ->
     CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
-                      WHERE snowflake_user = CURRENT_USER() AND persona = 'STAFF')
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
          THEN NULL ELSE v END;
 
 -- Fails harmlessly on a re-run, when the tag already carries these policies.
@@ -173,6 +184,22 @@ EXCEPTION
     WHEN OTHER THEN RETURN 'tag PII already has its masking policies: ' || SQLERRM;
 END;
 $$;
+
+-- CREATE IF NOT EXISTS does not refresh a policy that already exists. SET BODY does.
+-- STAFF stays masked. COUNTRY_STAFF is the country-demo staff persona. Branch managers,
+-- the CEO and customers are not in this list, so their values stay visible.
+ALTER MASKING POLICY MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_STRING SET BODY ->
+    CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
+         THEN '***' ELSE v END;
+ALTER MASKING POLICY MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_NUMBER SET BODY ->
+    CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
+         THEN NULL ELSE v END;
+ALTER MASKING POLICY MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_DATE SET BODY ->
+    CASE WHEN EXISTS (SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+                      WHERE snowflake_user = CURRENT_USER() AND persona IN ('STAFF', 'COUNTRY_STAFF'))
+         THEN NULL ELSE v END;
 
 -- dbt attaches policies and sets tags on the tables it owns.
 GRANT USAGE ON SCHEMA MERIDIAN_ANALYTICS.GOVERNANCE TO ROLE MERIDIAN_TRANSFORMER;
@@ -273,3 +300,284 @@ LEFT JOIN MERIDIAN_ANALYTICS.MARTS.DIM_BRANCH b ON b.branch_id = u.branch_id;
 --
 -- After the app exists:
 --   GRANT USAGE ON STREAMLIT MERIDIAN_ANALYTICS.GOVERNANCE.MERIDIAN_BANK TO ROLE MERIDIAN_CEO;   (and the other three)
+
+-- COUNTRY ENTITLEMENT
+-- A country_code value on dim_branch, dim_customer, dim_merchant or dim_sale_event names
+-- the country. It does not hide the other countries. This section projects those columns
+-- into one security-owned table and attaches RAP_COUNTRY_SCOPE to that column.
+--
+-- The branch policies are not changed. A Snowflake table accepts one row access policy,
+-- and dim_branch / dim_customer already use the branch and customer policies. Putting a
+-- second predicate into those policies would be a rewrite of the Mumbai personas.
+--
+-- Seeded countries are IN, AE, GB, US, SG. HK is not one of them. One fixture row with
+-- country_code HK is loaded so the Hong Kong user has a positive row to see. Every other
+-- row is copied from the marts, so the same user must not see India, Singapore, and the rest.
+--
+-- Three users share MERIDIAN_COUNTRY_OFFICER. The role is not the boundary.
+--   MERIDIAN_HK_OFFICER   COUNTRY_OFFICER  HK    sees only HK, email in clear
+--   MERIDIAN_HK_STAFF     COUNTRY_STAFF    HK    sees only HK, email masked as ***
+--   MERIDIAN_UNENTITLED   (no APP_USER row)      sees zero rows (deny by default)
+-- None of them is granted MERIDIAN_RAW. None of them is granted the marts.
+-- =====================================================================================
+
+CREATE ROLE IF NOT EXISTS MERIDIAN_COUNTRY_OFFICER
+  COMMENT = 'Shared by the country proof users. Isolation is RAP_COUNTRY_SCOPE, not this role.';
+GRANT ROLE MERIDIAN_COUNTRY_OFFICER TO ROLE SYSADMIN;
+GRANT USAGE ON WAREHOUSE WH_BI_XS TO ROLE MERIDIAN_COUNTRY_OFFICER;
+GRANT USAGE ON DATABASE MERIDIAN_ANALYTICS TO ROLE MERIDIAN_COUNTRY_OFFICER;
+GRANT USAGE ON SCHEMA MERIDIAN_ANALYTICS.GOVERNANCE TO ROLE MERIDIAN_COUNTRY_OFFICER;
+
+CREATE ROW ACCESS POLICY IF NOT EXISTS MERIDIAN_ANALYTICS.GOVERNANCE.RAP_COUNTRY_SCOPE
+AS (p_country_code STRING) RETURNS BOOLEAN ->
+    CASE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER() AND u.persona = 'CEO'
+        ) THEN TRUE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER()
+              AND u.persona IN ('COUNTRY_OFFICER', 'COUNTRY_STAFF')
+              AND u.country_code IS NOT NULL
+              AND u.country_code = p_country_code
+        ) THEN TRUE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER()
+        ) THEN FALSE
+        ELSE FALSE
+    END;
+
+ALTER ROW ACCESS POLICY MERIDIAN_ANALYTICS.GOVERNANCE.RAP_COUNTRY_SCOPE SET BODY ->
+    CASE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER() AND u.persona = 'CEO'
+        ) THEN TRUE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER()
+              AND u.persona IN ('COUNTRY_OFFICER', 'COUNTRY_STAFF')
+              AND u.country_code IS NOT NULL
+              AND u.country_code = p_country_code
+        ) THEN TRUE
+        WHEN EXISTS (
+            SELECT 1 FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER u
+            WHERE u.snowflake_user = CURRENT_USER()
+        ) THEN FALSE
+        ELSE FALSE
+    END;
+
+-- Load before the policy is attached. A policy on the target would filter this INSERT.
+CREATE OR REPLACE TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART (
+    source_model   STRING NOT NULL,
+    business_key   STRING NOT NULL,
+    country_code   STRING,
+    label          STRING,
+    contact_email  STRING
+)
+COMMENT = 'Country proof. country_code is projected from the existing marts. Branch policies stay on those marts.';
+
+INSERT INTO MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART
+    (source_model, business_key, country_code, label, contact_email)
+SELECT 'DIM_BRANCH', branch_id::STRING, country_code, branch_name, NULL
+FROM MERIDIAN_ANALYTICS.MARTS.DIM_BRANCH
+WHERE branch_id <> -1
+UNION ALL
+SELECT 'DIM_CUSTOMER', customer_id::STRING, country_code, full_name, NULL
+FROM MERIDIAN_ANALYTICS.MARTS.DIM_CUSTOMER
+WHERE is_current AND customer_id <> -1
+UNION ALL
+SELECT 'DIM_MERCHANT', merchant_id::STRING, country_code, merchant_name, NULL
+FROM MERIDIAN_ANALYTICS.MARTS.DIM_MERCHANT
+WHERE merchant_id <> -1
+UNION ALL
+SELECT 'DIM_SALE_EVENT', sale_event_id::STRING, country_code, event_name, NULL
+FROM MERIDIAN_ANALYTICS.MARTS.DIM_SALE_EVENT
+WHERE sale_event_id <> -1
+UNION ALL
+SELECT
+    'HK_ENTITLEMENT_FIXTURE',
+    'HK-CENTRAL-0001',
+    'HK',
+    'Hong Kong Central (fixture: seeded countries are IN, AE, GB, US, SG)',
+    'hk.customer@bank.example';
+
+-- Counts are taken before the policy exists, then stored where the policy cannot hide them.
+CREATE OR REPLACE TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_DEMO_EXPECTATION (
+    hk_rows            NUMBER NOT NULL,
+    other_country_rows NUMBER NOT NULL
+);
+
+INSERT INTO MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_DEMO_EXPECTATION (hk_rows, other_country_rows)
+SELECT
+    (SELECT COUNT(*) FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART WHERE country_code = 'HK'),
+    (SELECT COUNT(*) FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART WHERE country_code IS DISTINCT FROM 'HK');
+
+ALTER TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART
+  ADD ROW ACCESS POLICY MERIDIAN_ANALYTICS.GOVERNANCE.RAP_COUNTRY_SCOPE ON (country_code);
+
+ALTER TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART
+  MODIFY COLUMN contact_email
+  SET MASKING POLICY MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_STRING;
+
+GRANT SELECT ON TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART TO ROLE MERIDIAN_COUNTRY_OFFICER;
+GRANT SELECT ON TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART TO ROLE MERIDIAN_CEO;
+GRANT SELECT ON VIEW MERIDIAN_ANALYTICS.GOVERNANCE.V_MY_SCOPE TO ROLE MERIDIAN_COUNTRY_OFFICER;
+
+-- No USAGE, SELECT, or any other privilege on MERIDIAN_RAW is granted to this role.
+
+CREATE USER IF NOT EXISTS MERIDIAN_HK_OFFICER
+  DEFAULT_ROLE = MERIDIAN_COUNTRY_OFFICER
+  DEFAULT_WAREHOUSE = WH_BI_XS
+  MUST_CHANGE_PASSWORD = TRUE;
+CREATE USER IF NOT EXISTS MERIDIAN_HK_STAFF
+  DEFAULT_ROLE = MERIDIAN_COUNTRY_OFFICER
+  DEFAULT_WAREHOUSE = WH_BI_XS
+  MUST_CHANGE_PASSWORD = TRUE;
+CREATE USER IF NOT EXISTS MERIDIAN_UNENTITLED
+  DEFAULT_ROLE = MERIDIAN_COUNTRY_OFFICER
+  DEFAULT_WAREHOUSE = WH_BI_XS
+  MUST_CHANGE_PASSWORD = TRUE;
+GRANT ROLE MERIDIAN_COUNTRY_OFFICER TO USER MERIDIAN_HK_OFFICER;
+GRANT ROLE MERIDIAN_COUNTRY_OFFICER TO USER MERIDIAN_HK_STAFF;
+GRANT ROLE MERIDIAN_COUNTRY_OFFICER TO USER MERIDIAN_UNENTITLED;
+
+-- Branch personas keep a NULL country. Their policies do not read this column.
+UPDATE MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+SET country_code = NULL
+WHERE snowflake_user IN (
+    'MERIDIAN_CEO', 'MERIDIAN_BM_MUMBAI', 'MERIDIAN_STAFF_MUMBAI', 'MERIDIAN_CUSTOMER'
+);
+
+MERGE INTO MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER t
+USING (
+    SELECT 'MERIDIAN_HK_OFFICER' AS snowflake_user, 'COUNTRY_OFFICER' AS persona,
+           NULL::NUMBER AS branch_id, NULL::NUMBER AS customer_id, 'HK' AS country_code
+    UNION ALL
+    SELECT 'MERIDIAN_HK_STAFF', 'COUNTRY_STAFF', NULL::NUMBER, NULL::NUMBER, 'HK'
+) s
+ON t.snowflake_user = s.snowflake_user
+WHEN MATCHED THEN UPDATE SET
+    persona = s.persona,
+    branch_id = s.branch_id,
+    customer_id = s.customer_id,
+    country_code = s.country_code,
+    granted_by = CURRENT_USER(),
+    granted_at = CURRENT_TIMESTAMP()
+WHEN NOT MATCHED THEN INSERT (snowflake_user, persona, branch_id, customer_id, country_code)
+    VALUES (s.snowflake_user, s.persona, s.branch_id, s.customer_id, s.country_code);
+
+DELETE FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+WHERE snowflake_user = 'MERIDIAN_UNENTITLED';
+
+-- SHOW GRANTS columns are lowercase in RESULT_SCAN and must be quoted.
+SHOW GRANTS TO ROLE MERIDIAN_COUNTRY_OFFICER;
+CREATE OR REPLACE TEMPORARY TABLE MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_ROLE_GRANT_CHECK AS
+SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+
+-- Expect zero rows: the country role cannot read raw.
+SELECT "privilege", "granted_on", "name"
+FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_ROLE_GRANT_CHECK
+WHERE "name" ILIKE '%MERIDIAN_RAW%';
+
+EXECUTE IMMEDIATE $$
+DECLARE
+    branch_personas INTEGER;
+    hk_officer INTEGER;
+    hk_staff INTEGER;
+    unentitled INTEGER;
+    expected_hk INTEGER;
+    expected_other INTEGER;
+    raw_grants INTEGER;
+    mask_ddl STRING;
+    country_ddl STRING;
+    branch_ddl STRING;
+BEGIN
+    SELECT COUNT(*) INTO :branch_personas
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+    WHERE (snowflake_user = 'MERIDIAN_CEO' AND persona = 'CEO' AND country_code IS NULL)
+       OR (snowflake_user = 'MERIDIAN_BM_MUMBAI' AND persona = 'BRANCH_MANAGER' AND country_code IS NULL)
+       OR (snowflake_user = 'MERIDIAN_STAFF_MUMBAI' AND persona = 'STAFF' AND country_code IS NULL)
+       OR (snowflake_user = 'MERIDIAN_CUSTOMER' AND persona = 'CUSTOMER' AND country_code IS NULL);
+    IF (branch_personas <> 4) THEN
+        RAISE STATEMENT_ERROR(-20012, 'branch personas changed while adding country entitlements');
+    END IF;
+
+    SELECT COUNT(*) INTO :hk_officer
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+    WHERE snowflake_user = 'MERIDIAN_HK_OFFICER'
+      AND persona = 'COUNTRY_OFFICER'
+      AND country_code = 'HK'
+      AND branch_id IS NULL;
+    SELECT COUNT(*) INTO :hk_staff
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+    WHERE snowflake_user = 'MERIDIAN_HK_STAFF'
+      AND persona = 'COUNTRY_STAFF'
+      AND country_code = 'HK'
+      AND branch_id IS NULL;
+    SELECT COUNT(*) INTO :unentitled
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.APP_USER
+    WHERE snowflake_user = 'MERIDIAN_UNENTITLED';
+    IF (hk_officer <> 1 OR hk_staff <> 1 OR unentitled <> 0) THEN
+        RAISE STATEMENT_ERROR(-20013, 'HK entitlement or deny-by-default user is wrong');
+    END IF;
+
+    SELECT hk_rows, other_country_rows INTO :expected_hk, :expected_other
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_DEMO_EXPECTATION;
+    IF (expected_hk < 1 OR expected_other < 1) THEN
+        RAISE STATEMENT_ERROR(-20014, 'country projection has no HK row or no other country from the marts');
+    END IF;
+
+    SELECT COUNT(*) INTO :raw_grants
+    FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_ROLE_GRANT_CHECK
+    WHERE "name" ILIKE '%MERIDIAN_RAW%';
+    IF (raw_grants > 0) THEN
+        RAISE STATEMENT_ERROR(-20015, 'MERIDIAN_COUNTRY_OFFICER has a grant on MERIDIAN_RAW');
+    END IF;
+
+    SELECT GET_DDL('MASKING_POLICY', 'MERIDIAN_ANALYTICS.GOVERNANCE.MASK_PII_STRING') INTO :mask_ddl;
+    IF (POSITION('COUNTRY_STAFF', mask_ddl) = 0 OR POSITION('''STAFF''', mask_ddl) = 0) THEN
+        RAISE STATEMENT_ERROR(-20016, 'string masking policy does not mask STAFF and COUNTRY_STAFF');
+    END IF;
+
+    SELECT GET_DDL('ROW_ACCESS_POLICY', 'MERIDIAN_ANALYTICS.GOVERNANCE.RAP_COUNTRY_SCOPE') INTO :country_ddl;
+    IF (POSITION('COUNTRY_OFFICER', country_ddl) = 0 OR POSITION('FALSE', country_ddl) = 0) THEN
+        RAISE STATEMENT_ERROR(-20017, 'RAP_COUNTRY_SCOPE is missing the HK match or the deny path');
+    END IF;
+
+    SELECT GET_DDL('ROW_ACCESS_POLICY', 'MERIDIAN_ANALYTICS.GOVERNANCE.RAP_CUSTOMER_SCOPE') INTO :branch_ddl;
+    IF (POSITION('BRANCH_MANAGER', branch_ddl) = 0 OR POSITION('COUNTRY_OFFICER', branch_ddl) > 0) THEN
+        RAISE STATEMENT_ERROR(-20018, 'RAP_CUSTOMER_SCOPE was rewritten for country access');
+    END IF;
+
+    RETURN 'country proof installed: HK rows=' || expected_hk || ' other country rows=' || expected_other;
+END;
+$$;
+
+-- Log out between users. USE ROLE does not change CURRENT_USER().
+--   USE ROLE MERIDIAN_COUNTRY_OFFICER;  -- then log in as the user below
+--
+-- MERIDIAN_HK_OFFICER
+--   SELECT country_code, COUNT(*) FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART GROUP BY 1;
+--   Expect one group: HK.
+--   SELECT contact_email FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART
+--   WHERE source_model = 'HK_ENTITLEMENT_FIXTURE';
+--   Expect hk.customer@bank.example.
+--   SELECT * FROM MERIDIAN_RAW.POSTGRES_REF.COUNTRIES;
+--   Expect insufficient privileges.
+--
+-- MERIDIAN_HK_STAFF
+--   Same country_code result: HK only.
+--   contact_email for the fixture is ***.
+--
+-- MERIDIAN_UNENTITLED
+--   SELECT COUNT(*) FROM MERIDIAN_ANALYTICS.GOVERNANCE.COUNTRY_SCOPED_MART;
+--   Expect 0. The role has SELECT. The missing APP_USER row denies every row.
+--
+-- MERIDIAN_BM_MUMBAI (unchanged)
+--   SELECT COUNT(*) FROM MERIDIAN_ANALYTICS.MARTS.FCT_CARD_AUTHORIZATIONS;
+--   Still one branch. This user is not granted COUNTRY_SCOPED_MART.
+--   SELECT email FROM MERIDIAN_ANALYTICS.MARTS.DIM_CUSTOMER LIMIT 5;
+--   Still unmasked. STAFF remains the masked branch persona.

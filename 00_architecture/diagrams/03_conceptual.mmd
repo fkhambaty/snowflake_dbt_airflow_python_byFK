@@ -1,0 +1,16 @@
+%% Conceptual data model. Business entities and relationships only.
+%% Standard: ANSI/SPARC conceptual schema. No column types, no Snowflake, no surrogate keys.
+erDiagram
+    BRANCH ||--o{ CUSTOMER : "home branch"
+    BRANCH ||--o{ ACCOUNT : "opened at"
+    BRANCH ||--o{ EMPLOYEE : "works at"
+    CUSTOMER ||--o{ ACCOUNT : "holds, possibly jointly"
+    ACCOUNT ||--o{ TRANSACTION : "posts"
+    CUSTOMER ||--o{ CARD_APPLICATION : "applies"
+    CARD_APPLICATION ||--o| CARD : "opens, if approved"
+    CARD ||--o{ AUTHORIZATION : "attempts"
+    MERCHANT ||--o{ AUTHORIZATION : "receives"
+    SALE_EVENT ||--o{ AUTHORIZATION : "window, optional"
+    CUSTOMER ||--o{ OFFER : "may be shown"
+    CURRENCY ||--o{ TRANSACTION : "denominated in"
+    CURRENCY ||--o{ FX_RATE : "quoted"

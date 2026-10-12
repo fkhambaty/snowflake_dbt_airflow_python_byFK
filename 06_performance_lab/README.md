@@ -19,6 +19,7 @@ Every experiment follows the same four beats so students see a **number**, not a
 | 07 | `07_search_optimization_and_mv.sql` | point lookup by `reference_no`, then a fragment of that id (`CONTAINS`) | Equality SOS, then substring SOS; MV for an aggregate | elapsed, partitions_scanned |
 | 08 | `08_dbt_incremental_vs_full_refresh.md` | `dbt run --full-refresh` on the fact every 5 min | incremental MERGE + lookback window | dbt run timing and credits |
 | 09 | `09_warehouse_sizing_and_concurrency.sql` | 20 dashboard queries queue on one XS | multi-cluster vs bigger size | queued_overload_time |
+| 10 | `10_slow_query_triage_playbook.sql` | A slow query with no order of attack | Cache off, then history ordered slow and fast, queue vs execution, profile rows in/out, then pruning / spill / join / scale-out vs scale-up | elapsed_ms, queue_ms, partitions, spill bytes, join out/in |
 
 **Trial budget**: building the 100M-row lab table on an XS costs roughly 0.3–0.5 credits; the whole
 lab stays well under 10 credits. Drop `MERIDIAN_RAW.PERF_LAB` when you are done.

@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — pre-video study</title>
+<style>
+:root{
+  --bg:#111722;--panel:#1c2536;--panel2:#232e43;--line:#35435e;--ink:#f0f5fb;
+  --muted:#a3b1c7;--faint:#6d7d97;--teal:#2dd4bf;--sky:#38bdf8;--violet:#a78bfa;
+  --amber:#fbbf24;--coral:#ff7a5c;--green:#4ade80;--red:#fb7185;
+  --ease:cubic-bezier(.16,.84,.24,1);
+  --sans:"Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+.backdrop{position:fixed;inset:0;pointer-events:none;z-index:-2;background:
+  radial-gradient(900px 620px at 2% 5%,rgba(21,107,128,.36),transparent 65%),
+  radial-gradient(900px 700px at 95% 90%,rgba(91,75,181,.32),transparent 65%),
+  linear-gradient(160deg,#172032,#111722 58%,#17182b)}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.45;background-image:
+  linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(ellipse at center,#000 20%,transparent 82%)}
+a{color:var(--sky);text-decoration:none}
+a:hover{text-decoration:underline}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1480px;margin:0 auto}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:22px 16px 40px;border-right:1px solid var(--line);background:rgba(17,23,34,.78);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.mark{width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,var(--teal),var(--violet));transform:rotate(45deg);box-shadow:0 0 18px rgba(45,212,191,.55);flex:none}
+nav a{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:10px;color:var(--muted);font-size:13px;font-weight:700}
+nav a.on,nav a:hover{background:rgba(255,255,255,.05);color:var(--ink);text-decoration:none}
+nav a span{color:var(--faint);font-family:var(--mono);font-size:11px}
+main{padding:28px 36px 90px;min-width:0}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:800;display:flex;gap:10px;align-items:center}
+.eyebrow::before{content:"";width:28px;height:2px;background:currentColor}
+h1{font-size:64px;line-height:1.02;letter-spacing:-.045em;margin:14px 0}
+h2{font-size:36px;letter-spacing:-.03em;margin:0 0 8px}
+h3{font-size:20px;margin:0 0 8px}
+.grad{background:linear-gradient(92deg,#7dd3fc,#2dd4bf 46%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:18px;color:var(--muted);max-width:820px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center;margin-bottom:28px}
+.film{position:relative;border-radius:28px;overflow:hidden;min-height:280px;border:1px solid #3b4967;background:linear-gradient(145deg,#26334c,#192233);box-shadow:0 40px 90px -38px #000}
+.film svg{display:block;width:100%;height:auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chips span{padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:13px;font-weight:700}
+.section{margin:34px 0;padding:26px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(36,47,68,.55),rgba(28,37,54,.4))}
+.episode{margin:28px 0;padding:28px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,rgba(36,47,68,.72),rgba(20,28,42,.72));border-top:4px solid var(--c,var(--teal))}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card,.callout{padding:16px 18px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.callout.defense{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.07)}
+.callout.fail{border-color:rgba(251,113,133,.4);background:rgba(251,113,133,.07)}
+.callout.run{border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.06)}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.fail .tag{color:var(--red)}.run .tag{color:var(--teal)}
+.cmd{display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:12px 14px;border-radius:14px;background:#0c1220;border:1px solid rgba(125,211,252,.2)}
+.cmd code{font-family:var(--mono);font-size:13px;white-space:pre-wrap;color:#eaf2ff;flex:1}
+.cmd button{border:0;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer;color:#07131c;background:linear-gradient(135deg,#7dd3fc,#2dd4bf)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--faint);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+code,kbd{font-family:var(--mono);font-size:.92em}
+kbd{border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.04)}
+.map{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.map a{display:block;padding:14px;border-radius:16px;border:1px solid var(--line);border-top:3px solid var(--c);background:rgba(0,0,0,.18);color:inherit;min-height:118px}
+.map a:hover{text-decoration:none;transform:translateY(-3px);border-color:var(--c)}
+.map a b{display:block;color:var(--c);font-size:12px;letter-spacing:.12em}
+.map a strong{display:block;margin:8px 0 4px}
+.map a small{color:var(--muted)}
+.block{margin:12px 0;padding:14px 16px;border-radius:16px;background:rgba(8,12,22,.45);border:1px solid var(--line)}
+.block header{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px}
+.file{color:var(--sky);font-family:var(--mono);font-size:12px}
+.lines{color:var(--faint);font-family:var(--mono);font-size:12px}
+ol.walk{margin:0;padding-left:22px}
+ol.walk li{margin:4px 0}
+ol.walk b{color:var(--teal);font-family:var(--mono);font-weight:700}
+.diagram{background:rgba(8,12,22,.35);border:1px solid var(--line);border-radius:20px;padding:12px;overflow:auto}
+.diagram svg{width:100%;height:auto;display:block}
+.muted{color:var(--muted)}
+.small{color:var(--faint);font-size:13px}
+footer{margin-top:20px;color:var(--faint);font-size:13px}
+@media(max-width:980px){
+  .shell{grid-template-columns:1fr}
+  nav{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .hero,.grid2,.grid3,.map{grid-template-columns:1fr}
+  h1{font-size:42px}
+  main{padding:20px 16px 60px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="backdrop"></div><div class="grid-bg"></div>
+<div class="shell">
+<nav aria-label="Episodes">
+  <div class="brand"><i class="mark"></i>Meridian study</div>
+  <a href="#how-to-use">How to use <span>00</span></a>
+  <a href="#prerequisites">Prerequisites <span></span></a>
+  <a href="#episode-map">Episode map <span></span></a>
+  <a href="#architecture-picture">Picture <span></span></a>
+  <a href="#e0">Requirements <span>E0</span></a>
+  <a href="#e1">The bank <span>E1</span></a>
+  <a href="#e2">The star <span>E2</span></a>
+  <a href="#e3">Snowflake <span>E3</span></a>
+  <a href="#p0">Python <span>P0</span></a>
+  <a href="#e4">Ingestion <span>E4</span></a>
+  <a href="#e5">dbt staging <span>E5</span></a>
+  <a href="#e6">Facts <span>E6</span></a>
+  <a href="#e7">Airflow <span>E7</span></a>
+  <a href="#e8">Performance <span>E8</span></a>
+  <a href="#e9">Quality <span>E9</span></a>
+  <a href="#e10">Cards <span>E10</span></a>
+  <a href="#e11">English <span>E11</span></a>
+  <a href="#e12">Governance <span>E12</span></a>
+  <a href="#e13">Defend it <span>E13</span></a>
+  <a href="#interview-index">Interview index <span></span></a>
+</nav>
+<main>
+<section class="hero" id="top">
+  <div>
+    <div class="eyebrow">Pre-video study · offline</div>
+    <h1>See the bank. <span class="grad">Then run the proof.</span></h1>
+    <p class="lead">A self-contained guide for the Meridian build: architecture, Postgres, Python, Snowflake, dbt, Airflow, performance, quality, cards, plain English, governance, and the two-minute defense. Every practical claim names a file in this repository.</p>
+    <div class="chips">
+      <span>E0–E3 picture</span><span>P0 Python</span><span>E4–E13 proof</span><span>No CDN</span>
+    </div>
+  </div>
+  <div class="film" aria-hidden="true">
+    <svg viewBox="0 0 640 360">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7dd3fc"/><stop offset=".5" stop-color="#2dd4bf"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <rect x="36" y="48" width="120" height="64" rx="14" fill="#1c2536" stroke="#5b9bd5"/>
+      <text x="96" y="86" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">Postgres</text>
+      <rect x="196" y="48" width="120" height="64" rx="14" fill="#1c2536" stroke="#fbbf24"/>
+      <text x="256" y="86" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">Python</text>
+      <rect x="356" y="48" width="120" height="64" rx="14" fill="#1c2536" stroke="#38bdf8"/>
+      <text x="416" y="86" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">Snowflake</text>
+      <rect x="196" y="168" width="120" height="64" rx="14" fill="#1c2536" stroke="#ff7a5c"/>
+      <text x="256" y="206" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">dbt</text>
+      <rect x="356" y="168" width="120" height="64" rx="14" fill="#1c2536" stroke="#38bdf8"/>
+      <text x="416" y="206" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">Airflow</text>
+      <rect x="476" y="248" width="128" height="64" rx="14" fill="#1c2536" stroke="url(#g)"/>
+      <text x="540" y="286" text-anchor="middle" fill="#dbe7f5" font-size="14" font-family="sans-serif">English answer</text>
+      <path d="M156 80 H196 M316 80 H356 M256 112 V168 M416 112 V168 M316 200 H356 M476 200 H500 V248" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+    </svg>
+  </div>
+</section>
+
+<section class="section" id="how-to-use">
+  <div class="eyebrow">How to use this page</div>
+  <h2>One episode, then the file it names</h2>
+  <div class="grid3">
+    <article class="card"><h3>1. Read the episode</h3><p class="muted">Prerequisites, files, command, expected output, failures, then the logical blocks. The blocks follow the source in order.</p></article>
+    <article class="card"><h3>2. Run only that command</h3><p class="muted">Local checks need Docker and Python. Snowflake worksheets need your own trial. Expected warehouse numbers are labelled when they depend on the account.</p></article>
+    <article class="card"><h3>3. Say the defense</h3><p class="muted">Each amber box is one interview sentence tied to a file. The index at the bottom collects them.</p></article>
+  </div>
+  <p class="small">Machine map: <a href="coverage.json">coverage.json</a>. Anchors in that file match the <code>id</code> attributes on this page. <a href="README.md">study/README.md</a> is the short note.</p>
+</section>
+
+<section class="section" id="prerequisites">
+  <div class="eyebrow">Before E1</div>
+  <h2>Prerequisites</h2>
+  <table>
+    <tr><th>When</th><th>You need</th><th>Proof it is ready</th></tr>
+    <tr><td>E0, E2</td><td>This repository and a browser</td><td>This page opens from the clone with no network</td></tr>
+    <tr><td>E1 onward, local</td><td>Docker Desktop, Python 3.12, Git, DBeaver</td><td><code>python3 setup/verify_setup.py</code></td></tr>
+    <tr><td>P0, E4</td><td><code>.venv</code> and <code>requirements.txt</code></td><td><code>pytest -q tests</code> exits 0</td></tr>
+    <tr><td>E3 onward</td><td>Snowflake trial, Enterprise edition, key-pair auth</td><td>Scripts <code>03_snowflake/01</code>–<code>03</code> finish without a privilege error</td></tr>
+    <tr><td>E5–E6</td><td>dbt Core 1.10+ and a filled <code>profiles.yml</code> copied from the example</td><td><code>dbt debug --target prod</code> then <code>dbt parse</code></td></tr>
+    <tr><td>E7</td><td>Astro CLI for Airflow</td><td>DAG import succeeds in the local UI</td></tr>
+    <tr><td>E12</td><td>Terraform 1.6+</td><td><code>terraform plan</code> in <code>11_platform_terraform/</code></td></tr>
+  </table>
+  <p class="muted">Installers: <code>setup/MACOS_SETUP.md</code> and <code>setup/WINDOWS_SETUP.md</code>. Connection for DBeaver is <code>localhost:5432</code>, database <code>meridian_core</code>, user <code>meridian</code>, password <code>meridian</code>. Keep <code>.env</code> and <code>profiles.yml</code> off the commit.</p>
+</section>
+
+<section class="section" id="episode-map">
+  <div class="eyebrow">Recording order</div>
+  <h2>Episode map</h2>
+  <p class="lead">Logical order. The warehouse is designed before it is clicked. Python foundations sit after Snowflake exists and before the extractor runs.</p>
+  <div class="map">
+    <a style="--c:#2dd4bf" href="#e0"><b>E0 · 45m</b><strong>Requirements, then the picture</strong><small>NFRs, C4, one grain, ADRs</small></a>
+    <a style="--c:#5b9bd5" href="#e1"><b>E1 · 55m</b><strong>The bank comes alive</strong><small>Medallion, Docker, 3NF, 5M rows</small></a>
+    <a style="--c:#a78bfa" href="#e2"><b>E2 · 45m</b><strong>The star, on paper</strong><small>Bus matrix, SCD2, three facts</small></a>
+    <a style="--c:#38bdf8" href="#e3"><b>E3 · 40m</b><strong>Snowflake from zero</strong><small>RBAC, VARIANT, streams, time travel</small></a>
+    <a style="--c:#60a5fa" href="#p0"><b>P0 · 35m</b><strong>Python foundations</strong><small>Values, loops, paths, a tiny reconcile</small></a>
+    <a style="--c:#fbbf24" href="#e4"><b>E4 · 40m</b><strong>Watermark CDC</strong><small>Parquet, PUT, COPY, control tables</small></a>
+    <a style="--c:#ff7a5c" href="#e5"><b>E5 · 45m</b><strong>dbt I</strong><small>Sources, staging, snapshots</small></a>
+    <a style="--c:#f5c542" href="#e6"><b>E6 · 50m</b><strong>dbt II</strong><small>FX, facts, tests, macros</small></a>
+    <a style="--c:#38bdf8" href="#e7"><b>E7 · 30m</b><strong>Airflow</strong><small>5-minute path, daily gate, replay</small></a>
+    <a style="--c:#fbbf24" href="#e8"><b>E8 · 45m</b><strong>Performance lab</strong><small>Break, measure, fix, measure</small></a>
+    <a style="--c:#4ade80" href="#e9"><b>E9 · 30m</b><strong>Quality and runbooks</strong><small>CI, cost, quarantine</small></a>
+    <a style="--c:#fbbf24" href="#e10"><b>E10 · 40m</b><strong>Cards</strong><small>Policy, AUC gate, offer</small></a>
+    <a style="--c:#a78bfa" href="#e11"><b>E11 · 45m</b><strong>Ask in English</strong><small>Semantic view, RAP, masking</small></a>
+    <a style="--c:#a8a29e" href="#e12"><b>E12 · 45m</b><strong>Rules survive a rebuild</strong><small>Terraform, contracts, owners</small></a>
+    <a style="--c:#4ade80" href="#e13"><b>E13 · 20m</b><strong>Say it in two minutes</strong><small>Pitch, tenancy, one scar</small></a>
+  </div>
+</section>
+
+<section class="section" id="architecture-picture">
+  <div class="eyebrow">The picture you should be able to redraw</div>
+  <h2>One payment, six rooms</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 980 220" role="img" aria-label="Pipeline from Postgres through Python, raw Snowflake, dbt, Airflow, and serving">
+      <g font-family="sans-serif" font-size="13" fill="#e8eef8">
+        <rect x="10" y="40" width="140" height="70" rx="14" fill="#172033" stroke="#5b9bd5"/>
+        <text x="80" y="70" text-anchor="middle">Core banking</text>
+        <text x="80" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">Postgres 3NF</text>
+        <rect x="180" y="40" width="140" height="70" rx="14" fill="#172033" stroke="#fbbf24"/>
+        <text x="250" y="70" text-anchor="middle">Extract</text>
+        <text x="250" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">watermark → Parquet</text>
+        <rect x="350" y="40" width="150" height="70" rx="14" fill="#172033" stroke="#d08b4f"/>
+        <text x="425" y="70" text-anchor="middle">RAW</text>
+        <text x="425" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">append-only VARIANT</text>
+        <rect x="530" y="40" width="140" height="70" rx="14" fill="#172033" stroke="#ff7a5c"/>
+        <text x="600" y="70" text-anchor="middle">Transform</text>
+        <text x="600" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">stage → star</text>
+        <rect x="700" y="40" width="120" height="70" rx="14" fill="#172033" stroke="#38bdf8"/>
+        <text x="760" y="70" text-anchor="middle">Clock</text>
+        <text x="760" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">Airflow</text>
+        <rect x="840" y="40" width="130" height="70" rx="14" fill="#172033" stroke="#a78bfa"/>
+        <text x="905" y="70" text-anchor="middle">Serve</text>
+        <text x="905" y="90" text-anchor="middle" fill="#9fb0c8" font-size="11">policy + English</text>
+        <path d="M150 75 H180 M320 75 H350 M500 75 H530 M670 75 H700 M820 75 H840" stroke="#2dd4bf" stroke-width="2"/>
+        <text x="490" y="160" text-anchor="middle" fill="#a3b1c7">Hot facts ≤ 15 min p95 · reporting currency USD · history true on the day it happened</text>
+        <text x="490" y="184" text-anchor="middle" fill="#6d7d97">Storage and compute are separate. The analyst warehouse cannot lock a teller.</text>
+      </g>
+    </svg>
+  </div>
+  <div class="grid3" id="topic-medallion">
+    <article class="card"><h3>RAW</h3><p class="muted"><code>MERIDIAN_RAW</code>. Postgres rows as VARIANT, plus <code>_extracted_at</code> and <code>_batch_id</code>. The loader owns it. dbt reads it and does not remodel it in place.</p></article>
+    <article class="card"><h3>Staging and intermediate</h3><p class="muted">Typed, renamed, deduped, deletes removed. Intermediate holds FX forward-fill and the primary holder. Those are business rules before a dimension or a fact exists.</p></article>
+    <article class="card"><h3>Marts</h3><p class="muted">Kimball star: conformed dimensions, transaction facts, periodic balances, accumulating applications, the bridge, and aggregates. BI, ML, and the semantic view read this room.</p></article>
+  </div>
+</section>
+
+<section class="episode" id="e0" style="--c:#2dd4bf">
+  <p class="eyebrow">E0 · 45 min · read, do not open SQL yet</p>
+  <h2>Requirements first, then the architecture</h2>
+  <p class="lead">Meridian has 520 branches and five currencies. Reports disagree because they all query the core banking database. Card decisions take days. Fraud shows up on the statement. The platform’s job is one governed answer, in minutes, scoped to the person asking.</p>
+  <div class="grid2">
+    <article class="card" id="e0-prereq"><h3>Prerequisites</h3><p class="muted">The clone. No Snowflake login. No Docker. Read <code>00_architecture/ARCHITECTURE_PROCESS.md</code> in order: requirements, context, conceptual model, one grain, container and flow, then one ADR with the option you refused.</p></article>
+    <article class="card" id="e0-files"><h3>Files</h3>
+      <ul>
+        <li><code>00_architecture/DESIGN_DOC.md</code></li>
+        <li><code>00_architecture/ARCHITECTURE_PROCESS.md</code></li>
+        <li><code>00_architecture/diagrams/01_context.mmd</code> through <code>04_data_flow.mmd</code></li>
+        <li><code>00_architecture/adr/0001</code> … <code>0011-multitenancy-patterns.md</code> and <code>adr/README.md</code></li>
+        <li><code>07_data_modelling/BUS_MATRIX.md</code></li>
+      </ul>
+    </article>
+  </div>
+  <article class="callout run" id="e0-run"><span class="tag">Run</span><p>There is no command. Open the design doc and say the grain of <code>fct_transactions</code> out loud before any worksheet.</p></article>
+  <article class="card" id="e0-expected"><h3>Expected result</h3><p class="muted">You can restate the numeric NFRs: hot facts ≤ 15 minutes p95, dimensions ready by 06:00 local, zero error-test failures before publish, reconciliation inside $0.01 after a 2-minute fair cutoff, deny by default, mart RPO ≤ 1 day, mart RTO ≤ 4 hours, resource monitor suspends at 90%.</p></article>
+  <article class="callout fail" id="e0-failures"><span class="tag">Failure modes you must be able to name</span>
+    <ul>
+      <li>Extract dies after COPY and before the watermark moves. Next run reloads the window. Raw appends. Staging dedupes.</li>
+      <li>A source delete is invisible unless <code>cdc.deleted_records</code> has the tombstone.</li>
+      <li>A weekend with no FX rate is forward-filled and flagged.</li>
+      <li>A model under the AUC gate is stored as <code>REJECTED</code>. Marts keep the previous good scores.</li>
+      <li><code>CREATE OR REPLACE</code> drops a row policy. The dbt post-hook puts it back. Until governance is installed, the hook warns and grants nothing.</li>
+    </ul>
+  </article>
+  <div id="e0-blocks">
+    <article class="block" id="topic-requirements">
+      <header><span class="file">DESIGN_DOC.md</span><span class="lines">§1–§4</span><h3>Requirements and the arithmetic</h3></header>
+      <ol class="walk">
+        <li><b>§1</b> The problem is disagreeing reports, slow card decisions, and late fraud. The goal is one answer per question, scoped to the person.</li>
+        <li><b>F1–F7</b> Twenty operational tables move without changing the banking app. Amounts exist in local currency and USD. Customer history is true on the date asked. Dimensions are shared. Cards, English questions, and identifier search are in scope.</li>
+        <li><b>NFR table</b> Each target has a measurement and a consequence. Freshness is a source-freshness check. Correctness is a dbt gate. Access is a row policy plus <code>ACCESS_HISTORY</code>.</li>
+        <li><b>§4 volumes</b> Course seed is 200k customers, about 300k accounts, 5M transactions. The production sketch is 2M transactions a day.</li>
+        <li><b>Storage arithmetic</b> 2M × 250 bytes ÷ 5× compression is about 100 MB/day. Storage is cheap. Compute is the bill.</li>
+        <li><b>Micro-batch arithmetic</b> 288 runs × about 150 seconds is about 12 XS-hours a day, about 360 credits a month at the stated $3 assumption. Reference tables do not belong on that clock.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-adrs">
+      <header><span class="file">00_architecture/adr/</span><span class="lines">0001–0011</span><h3>One decision per file</h3></header>
+      <ol class="walk">
+        <li><b>0001</b> Watermark CDC on <code>updated_at</code>, with trigger-maintained deletes. Log-based CDC is the upgrade when freshness must fall below about a minute.</li>
+        <li><b>0002</b> Raw is append-only VARIANT so a new source column does not break COPY. Typing happens in dbt.</li>
+        <li><b>0003</b> The presentation layer is a Kimball star. Data Vault is recorded as extra cost for one source system.</li>
+        <li><b>0004</b> dbt transforms. Airflow orchestrates. Dynamic Tables and Tasks are the native alternative, demonstrated and then suspended.</li>
+        <li><b>0005</b> Model scores land in <code>MERIDIAN_RAW.ML</code>. They are not written back to Postgres.</li>
+        <li><b>0006</b> Row access keys on the Snowflake user. Security owns entitlements. The app does not invent a second filter.</li>
+        <li><b>0007</b> Iceberg waits until a second engine needs the tables.</li>
+        <li><b>0008</b> Terraform owns platform objects. dbt owns data objects and their grants. Security SQL owns policies.</li>
+        <li><b>0009</b> Identifier search is a serving table plus Search Optimization. A second search engine waits until the thing being searched is a document.</li>
+        <li><b>0010</b> Contracts enforce <code>dim_branch</code>, <code>dim_customer</code>, and <code>fct_transactions</code>. Private intermediates stay uncontracted. Raw keeps a warning-level key sentinel.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-tenancy">
+      <header><span class="file">adr/0011-multitenancy-patterns.md</span><span class="lines">1–64</span><h3>Shared tables, policy isolation</h3></header>
+      <ol class="walk">
+        <li><b>1–15</b> One bank, many countries, one star. A <code>country_code</code>, a customer id, or a UUID names the tenant. It does not authorize the reader. Primary and foreign keys are informational. <code>NOT NULL</code> can require the column. Presence is still not permission.</li>
+        <li><b>17–29</b> The decision is shared database, shared schema, shared tables, one dbt project, one contract. Isolation is a row access policy on <code>CURRENT_USER()</code> and <code>APP_USER</code>. <code>RAP_COUNTRY_SCOPE</code> takes <code>country_code</code>. The Hong Kong user sees HK only. A user with the same role and no entitlement sees zero rows. That role is <code>MERIDIAN_COUNTRY_OFFICER</code>, shared by the officer, the staff member, and the unentitled user, and it is not granted <code>MERIDIAN_RAW</code>. Branch personas stay on the branch and customer policies. One table accepts one row policy, so the country policy is not bolted onto those tables.</li>
+        <li><b>31–38</b> The options table: shared tables plus a policy (this bank), schema per tenant, database per tenant, and a UUID or country predicate typed into the query. The last one is never the control, because any client can drop the predicate.</li>
+        <li><b>40–46</b> A UUID identifies a row. The policy identifies the caller, including for a query that never mentions <code>country_code</code>.</li>
+        <li><b>48–64</b> One backfill and one semantic view. A bad transform hits every country, which is why <code>11_mart_integrity_and_quarantine.sql</code> exists. Noisy neighbors are a warehouse question (labs 03 and 09). Adding a country is an entitlement row. Revisit when a country needs its own key, its own failover, or a guarantee that no shared table exists. Even then, keep the policy inside that database.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e0-exercise"><h3>Exercise</h3><p>On paper, draw the context box with no product names inside it. Write the grain sentence for transactions. Write the CDC choice and the upgrade that would replace it.</p></article>
+  <article class="callout defense" id="e0-defense"><span class="tag">Interview defense</span><p id="topic-microbatch">“Design a near-real-time feed from an operational database into Snowflake.” Walk left to right. The built cadence is a five-minute micro-batch aimed at a 15-minute p95. Deletes are logged. A lag window covers long transactions. Raw is append-only. Staging dedupes. Marts merge. Control tables show each batch. Streaming and Snowpipe are the upgrade in ADR 0001 when seconds matter. ADR 0011 keeps one shared star and isolates countries with a row policy. A separate database is the revisit when a country needs its own key or its own failover.</p></article>
+</section>
+
+<section class="episode" id="e1" style="--c:#5b9bd5">
+  <p class="eyebrow">E1 · 55 min</p>
+  <h2>Medallion, setup, then the source system</h2>
+  <p class="lead">Bronze is the raw landing. Silver is typed, deduped staging. Gold is the star. The source that feeds bronze is a normalised Postgres bank, built by one script.</p>
+  <div class="grid2">
+    <article class="card" id="e1-prereq"><h3>Prerequisites</h3><p class="muted">E0 grain sentence. Docker Desktop running. <code>setup/verify_setup.py</code> green for the tools this episode uses.</p></article>
+    <article class="card" id="e1-files"><h3>Files, in build order</h3>
+      <ol>
+        <li><code>setup/verify_setup.py</code>, <code>setup/start_postgres.py</code></li>
+        <li><code>01_source_postgres/01_ddl_core_schema.sql</code> schemas <code>ref</code>, <code>core</code>, <code>cdc</code></li>
+        <li><code>02_seed_reference_data.sql</code> currencies, countries, 520 branches, FX</li>
+        <li><code>03_seed_bulk_data.sql</code> customers, accounts, 5M transactions</li>
+        <li><code>07_ddl_cards.sql</code> then <code>04_cdc_triggers.sql</code></li>
+        <li><code>05_dml_simulator_functions.sql</code>, <code>08_seed_cards.sql</code>, <code>09_card_simulator.sql</code></li>
+        <li>Lessons, by hand: <code>00_create_database.sql</code>, <code>06_sql_lessons.sql</code></li>
+      </ol>
+    </article>
+  </div>
+  <article class="callout run" id="e1-run"><span class="tag">Run</span>
+    <div class="cmd"><code>python3 setup/verify_setup.py
+python3 setup/start_postgres.py</code><button type="button" data-copy="python3 setup/verify_setup.py&#10;python3 setup/start_postgres.py">Copy</button></div>
+    <p class="small"><code>00_create_database.sql</code> is the manual DBeaver path. The setup script creates <code>meridian_core</code> itself. <code>06_sql_lessons.sql</code> is executed one block at a time after the load. A partial database refuses to continue until you pass <code>--rebuild</code>.</p>
+  </article>
+  <article class="card" id="e1-expected"><h3>Expected output</h3><p class="muted">The script prints <code>Executing …</code> and <code>Completed …</code> for each file in <code>SQL_ORDER</code>, then <code>Final source counts</code> and <code>PostgreSQL is ready.</code> A completed build has at least 5,000,000 rows in <code>core.transactions</code>, a <code>core.card_authorizations</code> table, and the <code>sim_tick</code> function. Design targets printed by the seed are 520 branches, 200,000 customers, and about 300,000 accounts. Re-running prints <code>The completed Meridian source already exists; no data was replaced.</code></p></article>
+  <article class="callout fail" id="e1-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li><code>Docker was not found</code> or <code>Docker Desktop is not running</code>. Install from <code>setup/</code>, start the engine, retry.</li>
+      <li>Postgres not ready in two minutes. Read <code>docker compose -f 01_source_postgres/docker-compose.postgres.yml logs postgres</code>.</li>
+      <li><code>CREATE DATABASE</code> inside a transaction fails in DBeaver. Enable auto-commit, or use the setup script.</li>
+      <li>Partial build: the script exits 1 and tells you to <code>--rebuild</code>. That drops only the course volume.</li>
+      <li>Port 5432 already taken by another Postgres. Stop that server or the compose health check never passes.</li>
+    </ul>
+  </article>
+  <div id="e1-blocks">
+    <article class="block" id="topic-oltp">
+      <header><span class="file">start_postgres.py</span><span class="lines">19–28, 130–142, 182–221</span><h3>The checked build</h3></header>
+      <ol class="walk">
+        <li><b>19–28</b> <code>SQL_ORDER</code> is the only legal sequence. Cards are created before CDC triggers so the triggers cover card tables. Lessons and the manual <code>CREATE DATABASE</code> are outside this list.</li>
+        <li><b>130–142</b> <code>completed_build</code> requires transactions ≥ 5,000,000, the card authorization table, and <code>sim_tick</code>. Anything else with a transaction table is a partial build.</li>
+        <li><b>182–193</b> Missing Docker exits 1 with a sentence. <code>--rebuild</code> runs compose down with volumes.</li>
+        <li><b>200–210</b> An already complete database prints counts and returns. A partial database returns 1 so two seeds cannot mix.</li>
+        <li><b>212–221</b> Each file runs with <code>ON_ERROR_STOP</code>. The final verification must pass before “PostgreSQL is ready.”</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">01_ddl_core_schema.sql</span><span class="lines">header and schemas</span><h3>3NF source, on purpose</h3></header>
+      <ol class="walk">
+        <li><b>Schemas</b> <code>ref</code> holds currencies, countries, channels, products, FX, merchants, sales, offers. <code>core</code> holds branches, employees, customers, accounts, holders, transactions, loans, and later cards. <code>cdc</code> holds delete tombstones.</li>
+        <li><b>Conventions</b> Surrogate ids, <code>created_at</code> / <code>updated_at</code>, and natural business keys. The warehouse will throw these keys away as the grain and replace them with surrogates.</li>
+        <li><b>Traps</b> The transaction cursor column is left without its ideal index so performance lab 01 can show a sequential scan. Fix it there, live.</li>
+        <li><b>Why this shape</b> OLTP wants one account and one insert, row storage, indexes, and ACID. An analyst scan of 5M rows on this database competes with tellers. The warehouse is the other shape: columnar, pruned, denormalised.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">04_cdc_triggers.sql</span><span class="lines">1–11 and trigger bodies</span><h3>Two guarantees the watermark needs</h3></header>
+      <ol class="walk">
+        <li><b>updated_at</b> Every change bumps the cursor. A bulk fix with triggers disabled is invisible. Daily reconciliation is the safety net. ADR 0001 names log-based CDC as the repair.</li>
+        <li><b>Deletes</b> A hard delete writes <code>cdc.deleted_records</code>. The extractor loads that table. Staging removes the key. A watermark query cannot see a row that is already gone.</li>
+        <li><b>Replica identity</b> The script prepares logical replication so a later Debezium or Openflow connector can read the same tables. Staging does not have to change shape.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">05 and 09 simulator SQL · 06_sql_lessons.sql</span><span class="lines">lesson blocks</span><h3>A moving bank, then SQL by hand</h3></header>
+      <ol class="walk">
+        <li><b>sim_tick</b> Inserts and updates so <code>updated_at</code> moves. Card simulator adds authorizations. Drive it with <code>SELECT * FROM core.sim_tick(500);</code> once you are ingesting.</li>
+        <li><b>06 lessons</b> Each commented block is one idea: filters, joins, aggregates, windows. Run one block, read the result, then the next. The window block is where <code>ROW_NUMBER</code>, <code>RANK</code>, and <code>DENSE_RANK</code> show their tie behaviour.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e1-exercise"><h3>Exercise</h3><p>Explain to a teammate why the teller database and the analyst database want opposite storage. Point at one core table and name its grain in the future fact.</p></article>
+  <article class="callout defense" id="e1-defense"><span class="tag">Interview defense</span><p>Bronze, silver, and gold are landing, conformance, and presentation. Postgres stays in third normal form because it serves one-row work. The star is a later choice, written down in E2, built in E6.</p></article>
+</section>
+
+<section class="episode" id="e2" style="--c:#a78bfa">
+  <p class="eyebrow">E2 · 45 min · still no warehouse clicks</p>
+  <h2>Design the star before you build it</h2>
+  <p class="lead">Kimball’s four steps: choose the business process, declare the grain, choose the dimensions, choose the facts. The bus matrix is that choice written as a grid.</p>
+  <article class="card" id="e2-prereq"><h3>Prerequisites</h3><p class="muted">E0 and E1. You can point at <code>core.transactions</code> and <code>core.customers</code>.</p></article>
+  <article class="card" id="e2-files"><h3>Files</h3><p><code>07_data_modelling/BUS_MATRIX.md</code>, <code>07_data_modelling/star_schema.mmd</code>, ADR 0003. The SQL that will implement this is <code>04_dbt_meridian_dw/models/marts/core/</code>, read now and run in E6.</p></article>
+  <article class="callout run" id="e2-run"><span class="tag">Run</span><p>Read the matrix row by row. Say each grain sentence at the bottom of <code>BUS_MATRIX.md</code>.</p></article>
+  <article class="card" id="e2-expected"><h3>Expected result</h3><p class="muted">You can place every fact: transactions are one row per movement at latest status; month-end balance is one row per account per month; loan and card applications are accumulating snapshots; branch daily performance is an aggregate. Customer and account are type 2. Branch, product, channel, currency, merchant, card, and offer are type 1. Balance is excluded from <code>dim_account</code> on purpose.</p></article>
+  <div class="diagram" id="topic-scd2">
+    <svg viewBox="0 0 860 160" role="img" aria-label="SCD2 timeline with two customer versions">
+      <line x1="40" y1="80" x2="820" y2="80" stroke="#35435e" stroke-width="4"/>
+      <circle cx="80" cy="80" r="8" fill="#2dd4bf"/>
+      <circle cx="420" cy="80" r="8" fill="#fbbf24"/>
+      <circle cx="760" cy="80" r="8" fill="#a78bfa"/>
+      <text x="80" y="40" fill="#2dd4bf" font-size="13" font-family="sans-serif">1900 valid_from</text>
+      <text x="80" y="120" fill="#9fb0c8" font-size="12" font-family="sans-serif">RETAIL</text>
+      <text x="420" y="40" fill="#fbbf24" font-size="13" font-family="sans-serif">June change</text>
+      <text x="420" y="120" fill="#9fb0c8" font-size="12" font-family="sans-serif">PREMIUM starts</text>
+      <text x="700" y="40" fill="#a78bfa" font-size="13" font-family="sans-serif">open valid_to</text>
+      <text x="180" y="70" fill="#e8eef8" font-size="12" font-family="sans-serif">March transaction matches RETAIL</text>
+    </svg>
+  </div>
+  <div id="e2-blocks">
+    <article class="block" id="topic-kimball">
+      <header><span class="file">BUS_MATRIX.md</span><span class="lines">table and grain list</span><h3>Processes, grains, conformed dimensions</h3></header>
+      <ol class="walk">
+        <li><b>Rows</b> Each business process becomes one fact. Transactions, balances, loans, card authorizations, card applications, offers, FX, branch-day.</li>
+        <li><b>Columns</b> Date, customer, account, branch, product, channel, currency, transaction type, employee, merchant, sale event. An X means the fact uses that conformed dimension.</li>
+        <li><b>PIT</b> Customer and account on a transaction use the surrogate that was valid at <code>transaction_ts</code>. A June premium segment must not rewrite March.</li>
+        <li><b>Bridge</b> <code>bridge_account_customer</code> carries joint holders and a weighting factor so a sum is not double-counted.</li>
+        <li><b>Junk</b> <code>dim_transaction_type</code> is type crossed with status, a small dimension so the fact stays numeric.</li>
+        <li><b>Unknown member</b> Missing lookups become <code>-1</code>. The fact still loads. The gap stays visible.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-fanout">
+      <header><span class="file">fact grain · lab 04 later</span><span class="lines">predicate</span><h3>A fan-out is a grain error</h3></header>
+      <ol class="walk">
+        <li><b>Wrong join</b> Customer id alone matches every SCD2 version. Rows out explode. Amounts multiply.</li>
+        <li><b>Right join</b> <code>valid_from &lt;= transaction_ts &lt; valid_to</code>. The multiplier returns to one.</li>
+        <li><b>Proof</b> <code>06_performance_lab/04_join_explosion_scd2.sql</code> and the dbt test <code>assert_scd2_no_overlapping_versions.sql</code>. Overlapping versions make the predicate ambiguous, so the test forbids them.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="callout fail" id="e2-failures"><span class="tag">Failure modes</span><p>Declaring “one row per customer” and then storing every transaction on that row. Mixing a stock (balance) into a flow fact. Using today’s segment on last year’s transactions. Forgetting the bridge weight on joint accounts.</p></article>
+  <article class="card" id="e2-exercise"><h3>Exercise</h3><p>Pick a March transaction for a customer who becomes premium in June. Name which surrogate key is correct, and which join predicate selects it.</p></article>
+  <article class="callout defense" id="e2-defense"><span class="tag">Interview defense</span><p>Three fact types live here: a transaction fact for each movement, a periodic snapshot for month-end balances, and an accumulating snapshot for an application that gathers dates as it moves. Conformed dimensions are built once and reused. History is type 2 with a half-open interval.</p></article>
+</section>
+
+<section class="episode" id="e3" style="--c:#38bdf8">
+  <p class="eyebrow">E3 · 40 min</p>
+  <h2>Snowflake from zero</h2>
+  <p class="lead">Storage is shared and columnar. Compute is a warehouse you can suspend. A virtual warehouse is not a database server you patch. Enterprise edition is selected on the trial so Search Optimization, materialized views, multi-cluster, and 90-day Time Travel exist for the lab.</p>
+  <article class="card" id="e3-prereq"><h3>Prerequisites</h3><p class="muted">E0–E2. An Enterprise trial. ACCOUNTADMIN for scripts 01 and the governance script later. Loader role for script 03.</p></article>
+  <article class="card" id="e3-files"><h3>Files, numeric order</h3>
+    <ol>
+      <li><code>03_snowflake/01_account_setup_rbac.sql</code> roles, warehouses, resource monitor</li>
+      <li><code>02_databases_schemas_grants.sql</code> <code>MERIDIAN_RAW</code> and <code>MERIDIAN_ANALYTICS</code></li>
+      <li><code>03_stages_raw_tables_control.sql</code> file format, stages, VARIANT tables, <code>WATERMARKS</code>, <code>LOAD_LOG</code></li>
+      <li><code>04_streams_tasks_dynamic_tables_demo.sql</code> native alternative, then suspend it</li>
+      <li><code>05_time_travel_clone_demo.sql</code></li>
+      <li>Later episodes: <code>06</code> governance, <code>07</code> search, <code>08</code> cost, <code>09</code> zero-copy dev, <code>10</code> recovery drill</li>
+    </ol>
+  </article>
+  <article class="callout run" id="e3-run"><span class="tag">Run</span><p>Snowsight, top to bottom, as the role named in each file header. Alternative for 01–02: <code>terraform plan</code> then <code>terraform apply</code> in <code>11_platform_terraform/</code>, then continue at script 03.</p></article>
+  <article class="card" id="e3-expected"><h3>Expected result</h3><p class="muted">Roles <code>MERIDIAN_LOADER</code>, <code>MERIDIAN_TRANSFORMER</code>, <code>MERIDIAN_ANALYST</code>, <code>MERIDIAN_ML</code>, and the persona roles exist. Warehouses <code>WH_INGEST_XS</code>, <code>WH_TRANSFORM_*</code>, and <code>WH_BI_XS</code> auto-suspend. Raw tables accept a VARIANT <code>record</code>. The streams demo creates objects and the file tells you to suspend the task so it does not burn credits after class. Time Travel can <code>UNDROP</code> or query <code>AT</code> a timestamp inside the retention window. These object names are expected. Credit consumption is account-dependent.</p></article>
+  <article class="callout fail" id="e3-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Script 03 as ACCOUNTADMIN creates objects the loader cannot own. Use the role in the header.</li>
+      <li>Standard edition: Search Optimization and materialized views in later labs will refuse. Recreate the trial as Enterprise while credits are still free.</li>
+      <li>A task left running after the demo. Suspend it the same day.</li>
+      <li>Resource monitor at 100% suspends warehouses. That is the control working. Raise the course quota only on purpose.</li>
+    </ul>
+  </article>
+  <div id="e3-blocks">
+    <article class="block" id="topic-snowflake-architecture">
+      <header><span class="file">01_account_setup_rbac.sql</span><span class="lines">1–112</span><h3>Functional roles, separate warehouses</h3></header>
+      <ol class="walk">
+        <li><b>1–19</b> The header states Enterprise, least privilege, and that persona roles do not decide rows. Policies do that in script 06. Mart grants live in dbt.</li>
+        <li><b>Roles</b> Loader writes raw. Transformer builds. Analyst reads. ML reads gold and writes <code>MERIDIAN_RAW.ML</code>. SYSADMIN inherits so an admin can operate.</li>
+        <li><b>Warehouses</b> Ingest, transform, and BI are separate so a dashboard queue does not stall COPY, and a transform spill does not stall a teller-facing extract.</li>
+        <li><b>Resource monitor</b> Notify, then suspend. The design doc’s cost ceiling becomes an account object.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-variant">
+      <header><span class="file">03_stages_raw_tables_control.sql</span><span class="lines">1–199</span><h3>VARIANT raw and the control tables</h3></header>
+      <ol class="walk">
+        <li><b>File format</b> Parquet, used by COPY. Internal stages sit in each raw schema.</li>
+        <li><b>Tables</b> One raw table per source. The payload is <code>record VARIANT</code> plus lineage columns. Schema drift in Postgres lands. Typing is a dbt concern.</li>
+        <li><b>WATERMARKS</b> One row per source table. The extractor merges it only after a successful load.</li>
+        <li><b>LOAD_LOG</b> One row per attempt: window, row count, file count, status, error. This is the first page of an incident.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-native-automation">
+      <header><span class="file">04_streams_tasks_dynamic_tables_demo.sql</span><span class="lines">1–98</span><h3>Native automation is a different product choice</h3></header>
+      <ol class="walk">
+        <li><b>Stream</b> A change feed on a table. A task consumes it on a schedule inside Snowflake.</li>
+        <li><b>Dynamic Table</b> Snowflake maintains a transform from a query. It is the native stand-in for a slice of dbt.</li>
+        <li><b>Why the course still uses dbt and Airflow</b> Tests, contracts, docs, cross-system extract, and a clock that also runs Python. ADR 0004. Run the demo, explain it, suspend it.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-timetravel">
+      <header><span class="file">05_time_travel_clone_demo.sql</span><span class="lines">1–44</span><h3>Undo and zero-copy</h3></header>
+      <ol class="walk">
+        <li><b>Time Travel</b> Query a table as of a timestamp, or <code>UNDROP</code> inside retention. Raw retention plus append-only history is the RPO story.</li>
+        <li><b>Clone</b> A zero-copy clone shares micro-partitions until something changes. Script 09 makes a disposable developer database the same way. Never point the app at it.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-snowflake-keys">
+      <header><span class="file">staging contracts and tests</span><span class="lines">E6 proof</span><h3>Snowflake keys are informational</h3></header>
+      <ol class="walk">
+        <li><b>What the engine enforces</b> <code>NOT NULL</code> is enforced. A primary key or unique constraint is not a storage guarantee you can trust for publication.</li>
+        <li><b>What we enforce</b> dbt <code>unique</code>, <code>not_null</code>, and <code>relationships</code>, plus contracts on the three public models. Incoming batches are deduped in staging with <code>QUALIFY</code>.</li>
+        <li><b>Proof</b> Duplicate a key on purpose. <code>dbt build</code> fails before that duplicate is the published table. The failing test is the evidence, and the fix is to remove the duplicate and rebuild.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e3-exercise"><h3>Exercise</h3><p>List the owner of a warehouse, a raw table, a mart, and a row policy. Four objects, three owners, matching ADR 0008.</p></article>
+  <article class="callout defense" id="e3-defense"><span class="tag">Interview defense</span><p>Snowflake separates storage from compute. Warehouses suspend. Keys in the table definition do not replace tests. VARIANT raw keeps load and typing apart. Streams and dynamic tables are real, and they are a choice you can decline when dbt’s tests and Airflow’s cross-system clock are the product.</p></article>
+</section>
+
+<section class="episode" id="p0" style="--c:#60a5fa">
+  <p class="eyebrow">P0 · 35 min · before the extractor</p>
+  <h2>Python foundations for this pipeline</h2>
+  <p class="lead">The browser can teach syntax. This pipeline needs a local interpreter, a virtual environment, and an exit code Airflow can read. Four short files, then pytest.</p>
+  <article class="card" id="p0-prereq"><h3>Prerequisites</h3><p class="muted">Python 3.12. No Snowflake. No Docker required for these four files.</p></article>
+  <article class="card" id="p0-files"><h3>Files</h3><p><code>02_ingestion_python/00_python_foundations/01</code> through <code>04</code>, plus <code>tests/test_python_foundations.py</code>.</p></article>
+  <article class="callout run" id="p0-run"><span class="tag">Run</span>
+    <div class="cmd"><code>python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt pytest
+python3 02_ingestion_python/00_python_foundations/01_values_and_decisions.py
+python3 02_ingestion_python/00_python_foundations/02_loops_and_functions.py
+python3 02_ingestion_python/00_python_foundations/03_collections_paths_libraries.py
+python3 02_ingestion_python/00_python_foundations/04_mini_reconciliation.py || true
+pytest -q tests</code><button type="button" data-copy="python3 -m venv .venv &amp;&amp; source .venv/bin/activate&#10;pip install -r requirements.txt pytest&#10;python3 02_ingestion_python/00_python_foundations/01_values_and_decisions.py&#10;python3 02_ingestion_python/00_python_foundations/02_loops_and_functions.py&#10;python3 02_ingestion_python/00_python_foundations/03_collections_paths_libraries.py&#10;python3 02_ingestion_python/00_python_foundations/04_mini_reconciliation.py || true&#10;pytest -q tests">Copy</button></div>
+  </article>
+  <article class="card" id="p0-expected"><h3>Expected output</h3>
+    <ul>
+      <li>01 prints integer and float types, a row difference of −2, an amount difference of −2500, and <code>Reconciliation: FAILED — rows or posted amounts disagree</code>.</li>
+      <li>02 prints batch lines for <code>transactions</code> and <code>card_authorizations</code> only, then heartbeats 1, 2, and 3.</li>
+      <li>03 prints a settings dictionary, three transaction ids, the finally sentence, and the library one-liners. <code>--limit 1</code> prints one row and still prints the finally line.</li>
+      <li>04 prints <code>FAILED: source and warehouse disagree</code> and the INR mismatch, then exits 1. The <code>|| true</code> is only so your shell continues. Pytest must exit 0.</li>
+    </ul>
+  </article>
+  <article class="callout fail" id="p0-failures"><span class="tag">Failure modes</span><p><code>python</code> missing on macOS: use <code>python3</code>. Windows: <code>py -3.12</code>. A red pytest after 04 is a real failure. The lesson’s exit 1 is the demonstration. Forgetting the virtual environment imports the wrong packages later in E4.</p></article>
+  <div id="p0-blocks">
+    <article class="block" id="topic-python-foundations">
+      <header><span class="file">01_values_and_decisions.py</span><span class="lines">1–26</span><h3>Text is not a number</h3></header>
+      <ol class="walk">
+        <li><b>3–6</b> Counts and amounts arrive as text, the way a file or a prompt often holds them.</li>
+        <li><b>8–13</b> <code>int</code> and <code>float</code> cast them. Differences are warehouse minus source. The threshold is one cent, built with <code>float("0.01")</code> so you see a cast of a string.</li>
+        <li><b>16–26</b> Prints show the type name. The decision passes only when rows match and the absolute amount gap is under the threshold. These sample numbers fail on purpose.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">02_loops_and_functions.py</span><span class="lines">1–31</span><h3>Functions, for, and a bounded while</h3></header>
+      <ol class="walk">
+        <li><b>4–8</b> <code>tables_to_load</code> returns the hot names when <code>hot_only</code> is true, else the whole list. The real hot list later lives in Airflow’s <code>_common.py</code>.</li>
+        <li><b>11–12</b> <code>describe_batch</code> returns a string. Printing is the caller’s job.</li>
+        <li><b>15–26</b> The for-loop asks for hot tables only. The while-loop stops at 3. The comment points at <code>--loop</code>, which is the unbounded form you will meet in the extractor.</li>
+        <li><b>29–30</b> <code>main</code> runs only when the file is the program.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">03_collections_paths_libraries.py</span><span class="lines">1–40</span><h3>Lists, dicts, paths, try</h3></header>
+      <ol class="walk">
+        <li><b>7–11</b> <code>--table</code> defaults to transactions. <code>--limit</code> is an int, default 3.</li>
+        <li><b>15–22</b> <code>parents[2]</code> is the repository root from this nested file. Settings are a dict. Rows are a list of dicts.</li>
+        <li><b>24–32</b> The slice honours <code>--limit</code>. <code>KeyError</code> and <code>TypeError</code> print and re-raise. <code>finally</code> runs on both paths.</li>
+        <li><b>34–36</b> The three libraries you are about to use: pandas in memory, pyarrow for Parquet, connectors for the databases.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">04_mini_reconciliation.py</span><span class="lines">1–51</span><h3>A quality gate is an exit code</h3></header>
+      <ol class="walk">
+        <li><b>4–9</b> Keys are <code>(date, currency)</code>. Values are <code>(count, amount)</code>. Tolerance defaults to 0.001 relative.</li>
+        <li><b>11–25</b> The union of keys catches a day that exists on only one side. Missing sides count as zero. The ratio uses <code>max(abs(amount), 1)</code> so a zero source does not divide by zero.</li>
+        <li><b>16</b> A count mismatch or a ratio above tolerance appends a dict. Sorted keys make the print stable.</li>
+        <li><b>29–45</b> The sample INR group disagrees (100 vs 98, 250000 vs 247500). USD agrees and stays out of the list. Failure returns 1.</li>
+        <li><b>48–50</b> <code>SystemExit</code> is how Airflow will see the same idea later. A green process that printed FAILED would be a lie.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="p0-exercise"><h3>Exercise</h3><p>Change the INR warehouse tuple to match the source and run 04 again. It should print PASSED and exit 0. Put the mismatch back before you continue.</p></article>
+  <article class="callout defense" id="p0-defense"><span class="tag">Interview defense</span><p>Python is here because bytes move between systems. dbt only transforms data that is already in the warehouse. A reconciliation that disagrees must fail the process, not just print a paragraph.</p></article>
+</section>
+
+<section class="episode" id="e4" style="--c:#fbbf24">
+  <p class="eyebrow">E4 · 40 min</p>
+  <h2>Moving the data: watermark CDC in Python</h2>
+  <p class="lead">dbt cannot fetch Postgres. This job reads a window, writes Parquet, PUTs it to an internal stage, and COPY INTO an append-only VARIANT table. The watermark moves only after success. A replay of an old window does not move it.</p>
+  <div class="grid2">
+    <article class="card" id="e4-prereq"><h3>Prerequisites</h3><p class="muted">P0 green. E1 database complete. E3 scripts 01–03 applied. <code>.env</code> filled from <code>.env.example</code> with your account and key path. Never commit <code>.env</code>.</p></article>
+    <article class="card" id="e4-files"><h3>Files</h3>
+      <ul>
+        <li><code>02_ingestion_python/config.py</code></li>
+        <li><code>02_ingestion_python/pg_to_snowflake.py</code></li>
+        <li><code>02_ingestion_python/simulate_activity.py</code></li>
+        <li><code>02_ingestion_python/reconcile_with_pandas.py</code></li>
+        <li><code>02_ingestion_python/dbt_artifact.py</code> (used in E9)</li>
+        <li><code>tests/test_extractor.py</code>, <code>tests/test_reconciliation.py</code></li>
+      </ul>
+    </article>
+  </div>
+  <article class="callout run" id="e4-run"><span class="tag">Run</span>
+    <div class="cmd"><code>python3 02_ingestion_python/pg_to_snowflake.py
+python3 02_ingestion_python/simulate_activity.py
+python3 02_ingestion_python/pg_to_snowflake.py --loop 300</code><button type="button" data-copy="python3 02_ingestion_python/pg_to_snowflake.py&#10;python3 02_ingestion_python/simulate_activity.py&#10;python3 02_ingestion_python/pg_to_snowflake.py --loop 300">Copy</button></div>
+    <p class="small">First command is the full load because the watermark starts at 1900-01-01. Simulator and <code>--loop 300</code> are two terminals. Bounded replay, watermark unchanged:</p>
+    <div class="cmd"><code>python3 02_ingestion_python/pg_to_snowflake.py --tables core.transactions \
+  --since 2026-09-01T00:00:00Z --until 2026-09-02T00:00:00Z</code><button type="button" data-copy="python3 02_ingestion_python/pg_to_snowflake.py --tables core.transactions --since 2026-09-01T00:00:00Z --until 2026-09-02T00:00:00Z">Copy</button></div>
+  </article>
+  <article class="card" id="e4-expected"><h3>Expected output</h3><p class="muted">Logs name each table, a row count, a file count, and <code>watermark -&gt;</code> a timestamp. Quiet tables log <code>no changes</code> and status <code>NO_CHANGES</code>. A replay logs <code>watermark unchanged (replay)</code> and status <code>REPLAY_SUCCESS</code>. <code>MERIDIAN_RAW.CONTROL.LOAD_LOG</code> grows one row per attempt. Row counts on the first load should match the Postgres counts within the lag window. Exact Snowflake timestamps are account-dependent; the status strings are not.</p></article>
+  <article class="callout fail" id="e4-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Missing <code>.env</code> or key: connector error before any COPY. Fix the env. Do not reset the watermark.</li>
+      <li>Failure after COPY and before watermark merge: status <code>FAILED</code> in <code>LOAD_LOG</code> if the log write succeeds. Next run re-reads the same window. Staging dedupes.</li>
+      <li><code>--since</code> without <code>--until</code>, or without <code>--tables</code>, or combined with <code>--loop</code>: the program exits with a sentence.</li>
+      <li>Timezone-naive bounds are rejected. Use <code>Z</code> or an explicit offset.</li>
+      <li>Triggers disabled on a bulk fix: the watermark never sees those rows. Reconciliation is the detector.</li>
+    </ul>
+  </article>
+  <div id="e4-blocks">
+    <article class="block" id="topic-watermark">
+      <header><span class="file">config.py</span><span class="lines">19–106</span><h3>What is replicated, and from where</h3></header>
+      <ol class="walk">
+        <li><b>14–16</b> <code>load_dotenv</code> reads the repository <code>.env</code>. dbt is the wrong tool for this file: it cannot move bytes between systems.</li>
+        <li><b>20–39</b> <code>SourceTable</code> stores schema, name, primary key, and cursor. Snowflake schema defaults to <code>POSTGRES_&lt;SCHEMA&gt;</code>. Deletes use <code>deleted_at</code>.</li>
+        <li><b>43–64</b> Twenty tables: reference, core, cards, and <code>cdc.deleted_records</code>. Order is for humans. Each table is independent.</li>
+        <li><b>68–106</b> Postgres defaults match the Docker bank. Snowflake defaults are the loader role and <code>WH_INGEST_XS</code>. Lag is 10 seconds. Chunks are 200,000 rows. Initial watermark is 1900-01-01 so the first run is a full load.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-idempotent">
+      <header><span class="file">pg_to_snowflake.py</span><span class="lines">1–173</span><h3>Connections, watermark, replay rules</h3></header>
+      <ol class="walk">
+        <li><b>1–23</b> The module docstring is the design: watermark CDC, append-only raw, VARIANT, idempotent retry, Parquet, control tables.</li>
+        <li><b>47–65</b> Postgres type OIDs map to Arrow. Unknown types become strings so a value is never dropped.</li>
+        <li><b>69–72</b> The Postgres connection is read-only.</li>
+        <li><b>75–102</b> Snowflake prefers a private key. Password is the fallback. Session timezone is UTC. Query tag is <code>meridian_ingest</code>.</li>
+        <li><b>110–118</b> Missing watermark means 1900-01-01.</li>
+        <li><b>121–132</b> <code>MERGE</code> into <code>WATERMARKS</code> after a good load.</li>
+        <li><b>135–145</b> <code>LOAD_LOG</code> records the attempt, including failures.</li>
+        <li><b>152–173</b> Replay bounds must both exist, parse as timezone-aware, and sit in order. <code>should_advance_watermark</code> is true only when there is no replay window.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">pg_to_snowflake.py</span><span class="lines">177–318</span><h3>Extract, load, and the per-table transaction</h3></header>
+      <ol class="walk">
+        <li><b>183–194</b> Timestamps become naive UTC. Unknown types become strings.</li>
+        <li><b>197–204</b> The select is <code>cursor &gt; low AND cursor &lt;= high</code>, ordered by the cursor.</li>
+        <li><b>210–237</b> A named server-side cursor fetches chunks. Each chunk gains <code>_extracted_at</code> and <code>_batch_id</code>, writes Snappy Parquet, and tracks the max cursor.</li>
+        <li><b>237</b> <code>rollback</code> ends the read-only snapshot.</li>
+        <li><b>242–265</b> One wildcard <code>PUT</code> with <code>AUTO_COMPRESS=FALSE</code> because Parquet is already compressed. <code>COPY INTO</code> stores <code>$1</code> as the VARIANT record, the batch columns, and <code>METADATA$FILENAME</code>. <code>ON_ERROR=ABORT_STATEMENT</code>. <code>PURGE=TRUE</code> removes staged files after a successful copy.</li>
+        <li><b>269–304</b> High watermark for a normal run is now minus lag. Zero rows still log success. Positive rows load, then the watermark advances to the max cursor seen, never blindly to <code>high</code>, so a quiet table does not skip a late commit. Replay skips <code>set_watermark</code>.</li>
+        <li><b>306–318</b> Any exception rolls back, logs <code>FAILED</code>, and returns false so other tables still run. Local Parquet files are deleted in <code>finally</code>.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">pg_to_snowflake.py</span><span class="lines">321–407</span><h3>One pass, a reset, or a loop</h3></header>
+      <ol class="walk">
+        <li><b>321–338</b> <code>run_once</code> opens both databases, processes the selected tables, and raises if any table returned false.</li>
+        <li><b>341–350</b> <code>--reset-watermark</code> deletes one control row. Raw history stays. The next run reloads. dbt dedupes.</li>
+        <li><b>364–384</b> Reset cannot combine with replay or loop. Replay cannot combine with loop and requires an explicit table list.</li>
+        <li><b>390–402</b> The loop sleeps the remainder of the interval. A connection-level failure is logged and the loop continues. Ctrl+C returns 0.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">reconcile_with_pandas.py</span><span class="lines">44–150</span><h3>Source and warehouse, same grain</h3></header>
+      <ol class="walk">
+        <li><b>44–92</b> Two frames, grouped by currency or by branch, inside a window that stops two minutes early so in-flight rows are not called drift.</li>
+        <li><b>94–105</b> Outer-merge and a tolerance. Mismatches are the result.</li>
+        <li><b>107–148</b> <code>--record</code> writes <code>RECONCILIATION_RUNS</code>. The process exits non-zero when groups disagree. The daily DAG treats that as a failed task.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e4-exercise"><h3>Exercise</h3><p>After a successful one-table load, run the same table again immediately. You should see <code>no changes</code> or a tiny lag window, and a second <code>LOAD_LOG</code> row. Explain why a second COPY of the same window would still be safe.</p></article>
+  <article class="callout defense" id="e4-defense"><span class="tag">Interview defense</span><p>The pipeline is micro-batch, every five minutes, with a lag so a long Postgres transaction is not skipped. It is honest about deletes and about trigger bypass. Idempotency comes from append-only raw plus a staging dedupe, and from refusing to move the watermark on a historical replay.</p></article>
+</section>
+
+<section class="episode" id="e5" style="--c:#ff7a5c">
+  <p class="eyebrow">E5 · 45 min · dbt I</p>
+  <h2>Sources, staging, snapshots</h2>
+  <p class="lead">Raw is a JSON payload. Staging turns it into columns, keeps the newest version of each key, and drops hard deletes. Snapshots start the type-2 history the star will need.</p>
+  <article class="card" id="e5-prereq"><h3>Prerequisites</h3><p class="muted">E4 has landed raw rows. <code>04_dbt_meridian_dw/profiles.yml</code> exists only on your machine, copied from <code>profiles.yml.example</code>.</p></article>
+  <article class="card" id="e5-files"><h3>Files</h3>
+    <ul>
+      <li><code>04_dbt_meridian_dw/dbt_project.yml</code>, <code>packages.yml</code>, <code>selectors.yml</code></li>
+      <li><code>models/staging/postgres/_postgres__sources.yml</code></li>
+      <li><code>models/staging/postgres/stg_postgres__transactions.sql</code> and the sibling staging models</li>
+      <li><code>snapshots/snap_customers.sql</code>, <code>snap_accounts.sql</code>, <code>snap_branches.sql</code></li>
+      <li><code>macros/helpers.sql</code>, <code>macros/generate_schema_name.sql</code></li>
+    </ul>
+  </article>
+  <article class="callout run" id="e5-run"><span class="tag">Run</span>
+    <div class="cmd"><code>cd 04_dbt_meridian_dw
+dbt deps
+dbt build --select staging.* snapshots --target prod
+dbt source freshness --target prod</code><button type="button" data-copy="cd 04_dbt_meridian_dw&#10;dbt deps&#10;dbt build --select staging.* snapshots --target prod&#10;dbt source freshness --target prod">Copy</button></div>
+  </article>
+  <article class="card" id="e5-expected"><h3>Expected output</h3><p class="muted"><code>dbt deps</code> installs <code>dbt_utils</code> and <code>dbt_expectations</code> into <code>dbt_packages/</code>, which stays uncommitted. Staging views compile. <code>stg_postgres__transactions</code> is an incremental table clustered by <code>transaction_date</code>. A second snapshot run on changed customers adds a version; the first run has one version per key, backdated where the model says so. Freshness warns or errors from <code>_extracted_at</code> against the YAML SLAs: 15 minutes warn and 60 minutes error on transactions and card authorizations. A quiet local trial that has not looped ingest will fail freshness. That is the check working. Pass/fail counts are account-dependent after the first load.</p></article>
+  <article class="callout fail" id="e5-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li><code>dbt debug</code> cannot log in. The profile points at the wrong account, role, or key. The example file has no secrets; yours must.</li>
+      <li>Database or schema missing. E3 scripts 01–03 have not been applied.</li>
+      <li>Freshness error on a laptop that loaded once and stopped. Either keep <code>--loop 300</code> running or treat the error as evidence, not as a broken model.</li>
+      <li>Parsing a missing JSON key yields NULL. ADR 0010’s raw sentinel warns. The load itself still succeeded, which is the point of VARIANT.</li>
+    </ul>
+  </article>
+  <div id="e5-blocks">
+    <article class="block" id="topic-staging">
+      <header><span class="file">_postgres__sources.yml</span><span class="lines">1–40</span><h3>The source contract</h3></header>
+      <ol class="walk">
+        <li><b>3–13</b> Source <code>postgres_core</code> lives in <code>MERIDIAN_RAW.POSTGRES_CORE</code>. Loaded-at field is <code>_extracted_at</code>. Default freshness is hours, because reference tables move daily.</li>
+        <li><b>25–36</b> Transactions and card authorizations override freshness to 15 and 60 minutes. That is the hot-path SLA from the design doc.</li>
+        <li><b>37–40</b> The payload column is documented as the whole Postgres row.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-qualify">
+      <header><span class="file">stg_postgres__transactions.sql</span><span class="lines">1–72</span><h3>The only incremental staging model</h3></header>
+      <ol class="walk">
+        <li><b>2–10</b> Incremental merge on <code>transaction_id</code>, clustered by date, hot-path tag. The post-hook applies hard deletes the merge cannot see.</li>
+        <li><b>13–21</b> Comment: re-parsing all raw every five minutes would be wasteful. Several versions of one id can land in a batch. <code>QUALIFY</code> keeps the newest.</li>
+        <li><b>25–41</b> Incremental filter re-reads a lookback on <code>_extracted_at</code> so a race between COPY and the merge is healed. <code>unique_key</code> makes the overlap harmless.</li>
+        <li><b>45–68</b> Each field is a cast from <code>record:</code>. Types are chosen here, not in the loader.</li>
+        <li><b>71–72</b> <code>row_number</code> partitioned by <code>transaction_id</code>, ordered by <code>updated_at</code> then <code>_extracted_at</code>, keeps row 1.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-snapshots">
+      <header><span class="file">snap_customers.sql · snap_accounts.sql</span><span class="lines">snapshot configs</span><h3>Timestamp strategy versus check strategy</h3></header>
+      <ol class="walk">
+        <li><b>Customers</b> Timestamp strategy on the source change column. A new <code>updated_at</code> closes the old version and opens a new one.</li>
+        <li><b>Accounts</b> Check strategy on the columns that define a version. Balance is intentionally not one of them, matching the bus matrix. Running check strategy every five minutes would mint versions from noise, which is why snapshots sit on the daily DAG.</li>
+        <li><b>Branches</b> History is parked in <code>snap_branches</code>. The published dimension stays type 1.</li>
+        <li><b>Second run</b> Unchanged keys keep one row. A changed key gets a second row with a new <code>valid_from</code>. That is the picture from E2.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e5-exercise"><h3>Exercise</h3><p>Update one customer in Postgres, ingest that table, snapshot twice. Show one customer id with two versions and no overlap.</p></article>
+  <article class="callout defense" id="e5-defense"><span class="tag">Interview defense</span><p>Staging is one-to-one with the source, typed, and deduped. Transactions are incremental because the raw table is the large one. Snapshots are how type-2 history starts. Freshness is a separate clock so a dead extractor is visible even when nobody opens a dashboard.</p></article>
+</section>
+
+<section class="episode" id="e6" style="--c:#f5c542">
+  <p class="eyebrow">E6 · 50 min · dbt II</p>
+  <h2>Dimensions, facts, tests, macros</h2>
+  <p class="lead">Episode 2 drew the star. This episode builds it. <code>ref()</code> decides the order. FX is forward-filled. The fact joins type-2 dimensions at the transaction timestamp. A reconciliation test is allowed to fail when you break it on purpose.</p>
+  <article class="card" id="e6-prereq"><h3>Prerequisites</h3><p class="muted">E5 staging and snapshots have run at least once. You can say the grain of <code>fct_transactions</code>.</p></article>
+  <article class="card" id="e6-files"><h3>Files</h3>
+    <ul>
+      <li><code>models/intermediate/int_fx_rates_daily_filled.sql</code></li>
+      <li><code>models/intermediate/int_transactions_with_fx.sql</code></li>
+      <li><code>models/intermediate/int_account_primary_holder.sql</code></li>
+      <li><code>models/marts/core/dim_customer.sql</code>, <code>dim_account.sql</code>, <code>fct_transactions.sql</code></li>
+      <li><code>models/marts/core/fct_monthly_account_balance.sql</code>, <code>fct_loan_applications.sql</code></li>
+      <li><code>models/marts/finance/agg_branch_daily_performance.sql</code></li>
+      <li><code>macros/helpers.sql</code> (<code>scd2_match</code>, <code>date_key</code>)</li>
+      <li><code>tests/assert_fct_transactions_reconciles_to_staging.sql</code></li>
+      <li><code>tests/assert_posted_transactions_have_fx.sql</code></li>
+      <li><code>tests/assert_scd2_no_overlapping_versions.sql</code></li>
+      <li><code>models/marts/core/_core__models.yml</code> contracts</li>
+    </ul>
+  </article>
+  <article class="callout run" id="e6-run"><span class="tag">Run</span>
+    <div class="cmd"><code>cd 04_dbt_meridian_dw
+dbt build --target prod</code><button type="button" data-copy="cd 04_dbt_meridian_dw&#10;dbt build --target prod">Copy</button></div>
+    <p class="small">A governance warning is expected until <code>03_snowflake/06_row_level_security.sql</code> has run. The build still succeeds. Objects land in <code>MERIDIAN_ANALYTICS</code> marts schemas. Then, optionally, <code>dbt docs generate</code> and open the lineage.</p>
+  </article>
+  <article class="card" id="e6-expected"><h3>Expected output</h3><p class="muted"><code>dbt build</code> runs models and tests. <code>fct_transactions</code> row count matches deduped staging for the same window, which is what <code>assert_fct_transactions_reconciles_to_staging</code> checks. Posted rows have an FX rate. SCD2 versions do not overlap. Contracted models are <code>dim_branch</code>, <code>dim_customer</code>, and <code>fct_transactions</code>. Exact elapsed time and warehouse credits are account-dependent.</p></article>
+  <article class="callout fail" id="e6-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Fan-out: the SCD2 predicate was removed and the reconciliation test explodes. Put the predicate back.</li>
+      <li>Missing FX on a weekend: forward-fill should cover it and set <code>fx_is_forward_filled</code>. If the test fails, the fill model did not run or the calendar has a hole.</li>
+      <li>Contract failure: a public column was renamed or retyped. The build stops before consumers see the new shape.</li>
+      <li>Duplicate natural key: <code>unique</code> fails. Snowflake did not stop the insert. The test did.</li>
+    </ul>
+  </article>
+  <div id="e6-blocks">
+    <article class="block" id="topic-facts">
+      <header><span class="file">fct_transactions.sql</span><span class="lines">1–110</span><h3>The atomic fact</h3></header>
+      <ol class="walk">
+        <li><b>2–12</b> Incremental merge on <code>transaction_id</code>. <code>inserted_at</code> is excluded from updates so the first landing time stays. Clustered by <code>transaction_date</code>. Metadata declares row policy <code>RAP_CUSTOMER_SCOPE</code> on <code>customer_id</code>. Tags put it on the five-minute selector.</li>
+        <li><b>15–24</b> Grain comment: one row per transaction, latest status. Degenerate dimensions stay on the fact. The SCD2 warning points at lab 04.</li>
+        <li><b>27–36</b> Incremental lookback on <code>_extracted_at</code>, same idea as staging.</li>
+        <li><b>40–47</b> Each dimension is selected with the keys the join needs. Unknown members <code>customer_id &lt;&gt; -1</code> are excluded from the match so they cannot steal a real row.</li>
+        <li><b>51–97</b> Surrogate keys, natural keys for reconciliation, measures in local and reporting currency, a count of 1, lineage columns.</li>
+        <li><b>99–100</b> Account and customer joins call <code>scd2_match</code>: <code>valid_from &lt;= ts &lt; valid_to</code>. Other dimensions join on the natural key only because they are type 1. <code>coalesce(..., '-1')</code> is the unknown member.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">int_fx_rates_daily_filled.sql</span><span class="lines">model body</span><h3>A rate for every day, flagged when borrowed</h3></header>
+      <ol class="walk">
+        <li><b>Spine</b> A date spine crosses the currencies. The reporting currency is the dbt variable, USD unless you change it.</li>
+        <li><b>Forward fill</b> The last known rate carries forward across weekends and holidays.</li>
+        <li><b>Flag</b> <code>is_forward_filled</code> and the age of the rate stay on the row. A silent fill would hide a broken feed.</li>
+        <li><b>Fact</b> <code>int_transactions_with_fx</code> multiplies amount by that day’s rate and signs credits and debits.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-incremental">
+      <header><span class="file">selectors.yml</span><span class="lines">1–32</span><h3>What runs every five minutes</h3></header>
+      <ol class="walk">
+        <li><b>microbatch</b> Tag <code>microbatch</code>, plus <code>fct_transactions</code> and <code>agg_branch_daily_performance</code>, excluding the completeness tag so the heavy bronze-to-staging proof stays daily.</li>
+        <li><b>daily</b> Snapshots, marts, and completeness.</li>
+        <li><b>ci_slim</b> State <code>modified+</code> against the production manifest. That is the CI selector in E9.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e6-exercise"><h3>Exercise</h3><p>Temporarily drop the SCD2 predicate in a dev clone, build the fact for a small slice, and watch the row count jump. Restore the predicate. Do this in the zero-copy dev database from script 09, never by editing production in place without a branch.</p></article>
+  <article class="callout defense" id="e6-defense"><span class="tag">Interview defense</span><p>The fact’s grain is one transaction at its latest status. History is a point-in-time surrogate, not today’s customer row. FX uses the rate of the transaction date and flags a fill. Tests guard amounts and keys because Snowflake will not.</p></article>
+</section>
+
+<section class="episode" id="e7" style="--c:#38bdf8">
+  <p class="eyebrow">E7 · 30 min</p>
+  <h2>Airflow schedules. It does not transform.</h2>
+  <p class="lead">Five DAGs. The five-minute DAG extracts four hot tables in a pool, builds the hot dbt selector, and fails if the pipeline is stale. The daily DAG does reference extracts, snapshots, the full build, reconciliation, and the manifest upload. Freshness is a separate watchdog. Replay is manual. Decisioning is weekly.</p>
+  <article class="card" id="e7-prereq"><h3>Prerequisites</h3><p class="muted">E4 and E6 have succeeded once from the shell, so you know the commands the DAGs shell out to. Astro CLI installed. <code>05_airflow/airflow_settings.yaml</code> stays local; start from the example.</p></article>
+  <article class="card" id="e7-files"><h3>Files</h3>
+    <ul>
+      <li><code>05_airflow/dags/_common.py</code></li>
+      <li><code>meridian_microbatch_ingest.py</code></li>
+      <li><code>meridian_daily_batch.py</code></li>
+      <li><code>meridian_source_freshness.py</code></li>
+      <li><code>meridian_bounded_replay.py</code></li>
+      <li><code>meridian_card_decisioning.py</code></li>
+      <li><code>meridian_alerts.py</code></li>
+    </ul>
+  </article>
+  <article class="callout run" id="e7-run"><span class="tag">Run</span>
+    <div class="cmd"><code>cd 05_airflow
+astro dev start</code><button type="button" data-copy="cd 05_airflow&#10;astro dev start">Copy</button></div>
+    <p class="small">Trigger <code>meridian_microbatch_ingest</code> once from the UI before you trust the schedule. Import errors appear in the DAG processor log. Offline, <code>python -m py_compile 05_airflow/dags/*.py</code> only proves syntax.</p>
+  </article>
+  <article class="card" id="e7-expected"><h3>Expected output</h3><p class="muted">The UI shows five Meridian DAGs. A micro-batch run has four mapped extract tasks (transactions, card applications, card authorizations, deleted records), then <code>dbt build --selector microbatch</code>, then <code>assert_pipeline_health</code>. The health task uses trigger rule <code>all_done</code> so it still reports after an upstream failure, and it fails the DAG when lag exceeds 15 minutes or the latest load failed. Daily schedule is 02:00 UTC. Freshness is every 15 minutes with zero retries. Replay has no schedule.</p></article>
+  <article class="callout fail" id="e7-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Two micro-batch runs overlap. <code>max_active_runs=1</code> is there so watermarks cannot race. If you remove it, two writers merge the same control row.</li>
+      <li><code>catchup=True</code> would replay empty Airflow intervals. The watermark already knows where the data is. Leave catchup off. Use the bounded replay DAG for a real historical window.</li>
+      <li>Pool <code>meridian_postgres</code> smaller than the mapped tasks. Extra tasks queue. That is protection for Postgres, not a bug.</li>
+      <li>dbt failure does not roll back raw. The next run continues. Fix the model. Do not reset the watermark.</li>
+    </ul>
+  </article>
+  <div id="e7-blocks">
+    <article class="block" id="topic-airflow">
+      <header><span class="file">_common.py</span><span class="lines">1–82</span><h3>Shared clock pieces</h3></header>
+      <ol class="walk">
+        <li><b>13–17</b> Airflow 3’s SDK is imported first. Airflow 2.9 decorators are the documented fallback. The inline import is the compatibility exception, kept at module top in a try block.</li>
+        <li><b>21–25</b> Paths default to the Astro image locations and can be overridden with environment variables.</li>
+        <li><b>30–52</b> A failed task, after retries, logs one JSON payload and optionally posts it. Default retries are 2, with backoff, and a 20-minute timeout.</li>
+        <li><b>54–70</b> Hot tables are the five-minute set. Daily tables are reference and slow masters. Card applications appear in both lists because features and the hot path both need them; the micro-batch is the freshness path.</li>
+        <li><b>73–75</b> <code>dbt()</code> cds into the project and pins <code>--target</code>.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-dbt-airflow">
+      <header><span class="file">meridian_microbatch_ingest.py</span><span class="lines">1–63</span><h3>The five-minute DAG</h3></header>
+      <ol class="walk">
+        <li><b>5–13</b> Design comment: one active run, no catchup, dynamic mapping, Airflow shells out, raw is not rolled back.</li>
+        <li><b>30–39</b> Schedule <code>*/5</code>, start date 2026-01-01 UTC, tags for the UI.</li>
+        <li><b>42–44</b> Each mapped task runs <code>pg_to_snowflake.py --tables</code> inside the ingest pool, four at a time.</li>
+        <li><b>47–49</b> Then the micro-batch selector: staging, intermediate, incremental fact, short aggregate refresh, their tests.</li>
+        <li><b>52–60</b> Health is an SLO. It is not a decorative print. The freshness DAG still exists so a dead scheduler is caught by a different DAG.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-replay">
+      <header><span class="file">meridian_daily_batch.py · meridian_bounded_replay.py · meridian_source_freshness.py</span><span class="lines">DAG bodies</span><h3>Daily gate, watchdog, replay</h3></header>
+      <ol class="walk">
+        <li><b>Daily 79–147</b> Mapped reference extracts, then snapshot, then <code>dbt build --selector daily</code> with <code>search_refresh_reference: true</code>, then <code>mart_integrity</code>, then pandas reconciliation for 7 days by currency with <code>--record</code>, then static docs, then upload of <code>manifest.json</code>.</li>
+        <li><b>119–134</b> <code>mart_integrity</code> has zero retries. It runs <code>03_snowflake/11_mart_integrity_and_quarantine.sql</code> as <code>MERIDIAN_TRANSFORMER</code> on <code>WH_TRANSFORM_XS</code> with query tag <code>meridian_mart_integrity</code>. A violation is not a transient error. The SQL commits the key and reason, then raises, so reconcile does not run.</li>
+        <li><b>Why daily is separate</b> Snapshots and full tests every five minutes would mint versions and spend credits. The periodic balance is a once-a-period fact.</li>
+        <li><b>Freshness</b> <code>dbt source freshness</code> every 15 minutes, zero retries, so the alert is immediate.</li>
+        <li><b>Replay 23–39</b> <code>schedule=None</code>. Params are one table, <code>since</code>, <code>until</code>, and a dbt selector. The shell command passes <code>--since</code> and <code>--until</code>. The watermark stays. This is the incident tool, not Airflow catchup.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e7-exercise"><h3>Exercise</h3><p>Stop the extractor loop and wait for the freshness DAG. It should fail. Start the loop again and show the next micro-batch go green. Say which DAG caught the outage, and why it was not the transform DAG.</p></article>
+  <article class="callout defense" id="e7-defense"><span class="tag">Interview defense</span><p>dbt owns SQL. Airflow owns time, pools, retries, and the decision to call Python. A failed quality task blocks downstream publication in that DAG. A green scheduler with a red freshness check is still an incident.</p></article>
+</section>
+
+<section class="episode" id="e8" style="--c:#fbbf24">
+  <p class="eyebrow">E8 · 45 min</p>
+  <h2>Break it, measure, fix, measure again</h2>
+  <p class="lead">Every lab has a before and an after. The measurement query reads <code>QUERY_HISTORY</code> by the <code>QUERY_TAG</code> you set. A feeling that it seemed faster is not a result.</p>
+  <article class="card" id="e8-prereq"><h3>Prerequisites</h3><p class="muted">E3 Enterprise trial. E6 fact exists if you want to point at the real clustering. The 100M-row lab table is built inside the lab and dropped afterwards. Budget note in the lab README: the 100M build is roughly 0.3–0.5 credits; the whole lab stays under about 10. Drop <code>MERIDIAN_RAW.PERF_LAB</code> when you finish.</p></article>
+  <article class="card" id="e8-files"><h3>Files</h3>
+    <p><code>06_performance_lab/00_measure.sql</code> through <code>10_slow_query_triage_playbook.sql</code>, plus <code>08_dbt_incremental_vs_full_refresh.md</code>.</p>
+  </article>
+  <article class="callout run" id="e8-run"><span class="tag">Run</span><p>In Snowsight, set a query tag, run the “break” statement, run <code>00_measure.sql</code>, run the fix, tag the after query, measure again. Postgres lab 01 uses <code>EXPLAIN (ANALYZE, BUFFERS)</code> in DBeaver.</p></article>
+  <article class="card" id="e8-expected"><h3>Expected result, by experiment</h3>
+    <table>
+      <tr><th>Lab</th><th>Break</th><th>Fix</th><th>Number that moves</th></tr>
+      <tr><td>01</td><td>CDC scan with no index</td><td><code>CREATE INDEX CONCURRENTLY</code> on the cursor</td><td>Postgres time: seconds toward milliseconds</td></tr>
+      <tr><td>02</td><td>100M rows loaded in random order</td><td>Order or <code>CLUSTER BY</code> the date</td><td><code>partitions_scanned / partitions_total</code> falls</td></tr>
+      <tr><td>03</td><td>Huge sort on XS</td><td>Rewrite, then a larger warehouse</td><td>Spill bytes fall; elapsed may fall</td></tr>
+      <tr><td>04</td><td>SCD2 join without dates</td><td>Half-open predicate</td><td>Row multiplier returns to 1</td></tr>
+      <tr><td>05</td><td>Second run looks magical</td><td>Disable result cache, suspend the warehouse</td><td>Elapsed splits into result cache, disk cache, and cold</td></tr>
+      <tr><td>06</td><td><code>TO_DATE(ts)</code>, <code>SELECT *</code>, <code>UNION</code>, <code>DISTINCT</code></td><td>Sargable range, named columns, <code>UNION ALL</code></td><td>Bytes scanned and elapsed</td></tr>
+      <tr><td>07</td><td>Point lookup and <code>CONTAINS</code></td><td>Equality SOS, then substring SOS; a materialized view for the aggregate</td><td>Elapsed and partitions. Enterprise only</td></tr>
+      <tr><td>08</td><td><code>--full-refresh</code> every five minutes</td><td>Incremental merge plus lookback</td><td>dbt timing and credits. Account-dependent</td></tr>
+      <tr><td>09</td><td>20 dashboards queue on one XS</td><td>Multi-cluster versus a bigger single warehouse</td><td><code>queued_overload_time</code></td></tr>
+    </table>
+    <p class="small">The direction of each metric is the lesson. Your milliseconds will differ by warehouse size and cache warmth. Label them as your account’s measurements.</p>
+  </article>
+  <article class="callout fail" id="e8-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Comparing a cached second run with a cold first run and calling it a tuning win. Lab 05 exists to stop that.</li>
+      <li>Scaling the warehouse when the query scanned every partition. Size does not prune. Lab 02 and 06 do.</li>
+      <li>Calling spill “a pruning problem.” Spill is memory. Pruning is partitions. They move different columns in <code>QUERY_HISTORY</code>.</li>
+      <li>Leaving the 100M lab table behind. Drop the schema when the episode ends.</li>
+    </ul>
+  </article>
+  <div class="diagram" id="topic-triage">
+    <svg viewBox="0 0 920 120" role="img" aria-label="Slow query triage order">
+      <g font-family="sans-serif" font-size="13" fill="#e8eef8">
+        <rect x="10" y="30" width="160" height="54" rx="12" fill="#172033" stroke="#fbbf24"/>
+        <text x="90" y="62" text-anchor="middle">Fast vs slow history</text>
+        <rect x="190" y="30" width="170" height="54" rx="12" fill="#172033" stroke="#38bdf8"/>
+        <text x="275" y="62" text-anchor="middle">Queue vs execution</text>
+        <rect x="380" y="30" width="160" height="54" rx="12" fill="#172033" stroke="#fb7185"/>
+        <text x="460" y="62" text-anchor="middle">Widest operator</text>
+        <rect x="560" y="30" width="150" height="54" rx="12" fill="#172033" stroke="#4ade80"/>
+        <text x="635" y="62" text-anchor="middle">One change</text>
+        <rect x="730" y="30" width="170" height="54" rx="12" fill="#172033" stroke="#2dd4bf"/>
+        <text x="815" y="62" text-anchor="middle">Rerun, new tag</text>
+        <path d="M170 57 H190 M360 57 H380 M540 57 H560 M710 57 H730" stroke="#2dd4bf" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+  <div id="e8-blocks">
+    <article class="block">
+      <header><span class="file">00_measure.sql</span><span class="lines">1–45</span><h3>The ruler</h3></header>
+      <ol class="walk">
+        <li><b>Tag</b> <code>ALTER SESSION SET QUERY_TAG</code> before the experiment. The after query uses a different suffix.</li>
+        <li><b>History</b> Elapsed milliseconds, bytes scanned, partitions scanned and total, bytes spilled to local and remote storage, queued overload time.</li>
+        <li><b>Side by side</b> The README’s rule is both rows in one result before you claim a fix.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-pruning">
+      <header><span class="file">02 and 06</span><span class="lines">experiments</span><h3>Pruning</h3></header>
+      <ol class="walk">
+        <li><b>02</b> Random load order defeats date predicates. Clustering or load order puts the same dates in fewer micro-partitions. Partitions scanned falls. Bytes scanned falls with them.</li>
+        <li><b>06</b> <code>TO_DATE(column) = date</code> hides the column from pruning. A half-open range on the raw timestamp can prune. <code>UNION</code> distinct-sorts; <code>UNION ALL</code> does not. <code>SELECT *</code> reads columns you do not need.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-spilling">
+      <header><span class="file">03_spilling_and_warehouse_size.sql</span><span class="lines">experiment</span><h3>Spilling</h3></header>
+      <ol class="walk">
+        <li><b>Symptom</b> <code>bytes_spilled_to_local_storage</code> or remote spill is non-zero. The warehouse ran out of memory for a sort, hash, or window.</li>
+        <li><b>First fix</b> Reduce the work: filter earlier, shrink the window frame, pre-aggregate.</li>
+        <li><b>Second fix</b> A larger warehouse gives the remaining work more memory. That is scale up. It does not fix a predicate that scans every partition.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-scale">
+      <header><span class="file">09_warehouse_sizing_and_concurrency.sql</span><span class="lines">experiment</span><h3>Scale up is a different lever from scale out</h3></header>
+      <ol class="walk">
+        <li><b>One heavy query</b> A bigger warehouse (XS toward M) reduces spill and elapsed for that query. Lab 03.</li>
+        <li><b>Many light queries</b> They queue. <code>queued_overload_time</code> is the column. Multi-cluster warehouses add clusters. A single bigger warehouse gives each query more horsepower and still one door.</li>
+        <li><b>Sentence</b> Size for the query’s memory. Clusters for the queue.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">10_slow_query_triage_playbook.sql</span><span class="lines">1–231</span><h3>The order is the experiment</h3></header>
+      <ol class="walk">
+        <li><b>1–32</b> Result cache off first. Then history, slowest and fastest. Then queue versus execution. Then the widest operator’s rows in and rows out. Then classify: queue means scale out (lab 09), spill means rewrite then maybe scale up (lab 03), partitions scanned equal to partitions total means no pruning (labs 02 and 06), join rows-out over rows-in above 1 means a grain error (lab 04), otherwise scale up. Rerun under a new tag with the result cache still off. Disk cache can still shrink bytes; that is lab 05. <code>INFORMATION_SCHEMA</code> is immediate. <code>ACCOUNT_USAGE</code> lags about 45 minutes. The probes below do not need the 100M-row table.</li>
+        <li><b>34–55</b> Tag <code>perflab_10_fast</code> counts 1,000 generated rows. Tag <code>perflab_10_slow</code> joins 200,000 rows to 10 rows on <code>TRUE</code>, so the profile shows two million rows out. <code>LAST_QUERY_ID()</code> captures the slow select.</li>
+        <li><b>57–103</b> Session history for those tags, ordered slow then fast, with queue milliseconds split from execution. The CASE says queue only when queue time exceeds execution time. One session often queues zero milliseconds. Lab 09 is the real queue. The CASE is the same one you reuse there.</li>
+        <li><b>105–131</b> <code>GET_QUERY_OPERATOR_STATS</code> lists operators by rows out. Join operators expose <code>out_per_in</code>. Above 1 is a fan-out.</li>
+        <li><b>133–171</b> One classification query reads the first matching branch only. A queued query is not reported as a pruning problem. Generator probes may show zero partitions and zero spill. Those readings are real. Labs 02, 03, and 06 move the numbers on <code>TXN_SORTED</code>.</li>
+        <li><b>173–216</b> Rerun as <code>perflab_10_slow_rerun</code> and compare the three tags. A second select lists the warehouse’s slow selects from the last six hours when you are triaging someone else’s query.</li>
+        <li><b>218–231</b> If <code>MERIDIAN_RAW.PERF_LAB.TXN_SORTED</code> is absent, the script returns the lab pointers. If it exists, re-read history for tags <code>perflab_02</code>, <code>03</code>, <code>06</code>, and <code>09</code> with the same classification.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e8-exercise"><h3>Exercise</h3><p>Take one slow query you wrote yourself. Fill a four-row note: history, queue or execution, widest operator, rerun delta. Stop after one change.</p></article>
+  <article class="callout defense" id="e8-defense"><span class="tag">Interview defense</span><p>Pruning reduces partitions. Spilling is memory pressure. A larger warehouse helps one memory-heavy query. Multi-cluster helps a queue. A second run can be a cache. The playbook forces that order before anyone resizes production.</p></article>
+</section>
+
+<section class="episode" id="e9" style="--c:#4ade80">
+  <p class="eyebrow">E9 · 30 min</p>
+  <h2>Quality, CI, cost, and the 2 a.m. page</h2>
+  <p class="lead">A green DAG is not a correct number. This episode wires tests, a slim CI build, reconciliation, cost views, and the runbook. It also names the quarantine proof for tables that rot outside the pipeline.</p>
+  <article class="card" id="e9-prereq"><h3>Prerequisites</h3><p class="muted">E6 build has produced marts. E7 DAGs import. You have read <code>00_architecture/OPERATIONS_RUNBOOK.md</code> and <code>00_architecture/DR_RUNBOOK.md</code>.</p></article>
+  <article class="card" id="e9-files"><h3>Files</h3>
+    <ul>
+      <li><code>.github/workflows/meridian-checks.yml</code> offline pytest, compile, <code>dbt parse</code></li>
+      <li><code>.github/workflows/meridian-dbt-ci.yml</code> slim state selector when secrets exist</li>
+      <li><code>04_dbt_meridian_dw/selectors.yml</code> <code>ci_slim</code></li>
+      <li><code>02_ingestion_python/dbt_artifact.py</code> manifest upload and download</li>
+      <li><code>03_snowflake/08_cost_attribution.sql</code></li>
+      <li><code>03_snowflake/10_dr_exercises.sql</code> and <code>09_zero_copy_dev_environment.sql</code></li>
+      <li><code>tests/assert_staging_complete_versus_bronze.sql</code></li>
+      <li><code>tests/assert_raw_transactions_required_keys.sql</code></li>
+      <li><code>03_snowflake/11_mart_integrity_and_quarantine.sql</code></li>
+      <li><code>04_dbt_meridian_dw/tests/assert_mart_referential_integrity.sql</code></li>
+    </ul>
+  </article>
+  <article class="callout run" id="e9-run"><span class="tag">Run</span>
+    <div class="cmd"><code>pytest -q tests
+cd 04_dbt_meridian_dw && dbt build --selector daily --target prod</code><button type="button" data-copy="pytest -q tests&#10;cd 04_dbt_meridian_dw &amp;&amp; dbt build --selector daily --target prod">Copy</button></div>
+    <p class="small">Cost and recovery SQL run in Snowsight as the header role, after 01–03. The GitHub workflows run on pull request. Offline success does not prove a warehouse policy ran.</p>
+  </article>
+  <article class="card" id="e9-expected"><h3>Expected output</h3>
+    <ul>
+      <li>Pytest exits 0 with no warehouse.</li>
+      <li>Daily dbt build runs snapshots, marts, completeness tests, and the reconciliation singular tests.</li>
+      <li><code>V_PLATFORM_STATUS</code> and <code>V_FAILED_LOADS_24H</code> return the signals in the runbook. An empty failed-load view means the last day of loads succeeded.</li>
+      <li>Cost views estimate credits by splitting a warehouse-day across query milliseconds. The file says the estimate out loud. Account usage can lag about three hours.</li>
+      <li>DR script 10 changes nothing in production. It records query ids in a disposable schema. Elapsed time is account-dependent.</li>
+    </ul>
+  </article>
+  <article class="callout fail" id="e9-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>CI slim compare with no production manifest compares against nothing useful. The daily DAG uploads <code>manifest.json</code> first.</li>
+      <li>Treating <code>ACCOUNT_USAGE</code> as an alert. It lags. Freshness and <code>LOAD_LOG</code> are the alerts. Cost views are the trend.</li>
+      <li>Repairing a dbt grant with a Terraform change, or a policy with a dbt model. ADR 0008: one owner per object type. The runbook repeats it.</li>
+      <li>A mart orphan created by a manual delete of a dimension. The pipeline tests will not see it until the quarantine proof runs.</li>
+    </ul>
+  </article>
+  <div id="e9-blocks">
+    <article class="block" id="topic-ci">
+      <header><span class="file">meridian-checks.yml · dbt_artifact.py</span><span class="lines">workflow and 1–48</span><h3>Offline checks, then a promoted manifest</h3></header>
+      <ol class="walk">
+        <li><b>Checks workflow</b> Pytest, <code>py_compile</code> of the Python entry points, <code>start_postgres.py --help</code>, then a dbt parse against a fake offline profile. No private key is required.</li>
+        <li><b>Slim CI</b> Download the prod manifest, <code>dbt build --selector ci_slim --state …</code>. Only modified models and downstream run.</li>
+        <li><b>dbt_artifact.py 23–46</b> Upload and download use the internal stage. The daily DAG calls upload after docs. CI calls download. Snowflake is the artifact store so the course does not add a second bucket for one JSON file.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-cost">
+      <header><span class="file">08_cost_attribution.sql</span><span class="lines">1–97</span><h3>Credits with a caveat</h3></header>
+      <ol class="walk">
+        <li><b>Header</b> Run as ACCOUNTADMIN after platform and governance. Usage views lag.</li>
+        <li><b>Allocation</b> Warehouse credits for a day are spread across queries by execution time. That is an estimate, and the SQL says so. It is good enough to see that the five-minute warehouse dominates.</li>
+        <li><b>What you do with it</b> Move reference tables to the daily DAG, which E7 already did, and confirm the ingest warehouse’s share falls.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-runbook">
+      <header><span class="file">OPERATIONS_RUNBOOK.md · DR_RUNBOOK.md</span><span class="lines">procedures</span><h3>Five-minute daily check</h3></header>
+      <ol class="walk">
+        <li><b>Status view</b> <code>select * from MERIDIAN_ANALYTICS.OPERATIONS.V_PLATFORM_STATUS</code>. A green Airflow run with a red row is an incident.</li>
+        <li><b>Failed loads</b> <code>V_FAILED_LOADS_24H</code>. Read <code>error_message</code>. Do not reset the watermark as a first move.</li>
+        <li><b>Stale hot source</b> Check Postgres and the mapped task. Retry the task. Raw append and staging dedupe make retry safe. A known missed window uses <code>meridian_bounded_replay</code>.</li>
+        <li><b>Recovery</b> Script 10 is the drill. Marts rebuild from raw with <code>dbt build</code>. RPO and RTO targets are in the design doc. Cross-region failover is named as unproven on a trial.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-quarantine">
+      <header><span class="file">11_mart_integrity_and_quarantine.sql</span><span class="lines">1–640</span><h3>Keys that do not enforce, and a quarantine that does</h3></header>
+      <ol class="walk">
+        <li><b>1–23</b> Run as <code>MERIDIAN_TRANSFORMER</code> after <code>dbt build --target prod</code>. <code>meridian_daily_batch</code> calls it from <code>mart_integrity</code>, after the build and before reconciliation. A <code>MART</code> / <code>VIOLATION</code> row raises, so that task fails and reconcile does not run. Primary and foreign keys are informational. <code>RELY</code> is not used. <code>NOT NULL</code> is enforced. Unknown member <code>-1</code> keeps the fact in the mart. Any other missing key is quarantined. This script does not delete from <code>MARTS</code>.</li>
+        <li><b>25–64</b> Schema <code>INTEGRITY</code>. <code>MART_INTEGRITY_EXCEPTION</code> stores scope, severity, type, object, business key, and reason. <code>MART_QUARANTINE</code> copies the payload. <code>DEMO</code> is the lesson. <code>MART</code> is production. Only <code>MART</code> plus <code>VIOLATION</code> fails the run. <code>ACCEPTED</code> does not.</li>
+        <li><b>66–116</b> Demo dimension and fact declare a primary key and a foreign key <code>NOT ENFORCED</code>. Inserts land a duplicate <code>transaction_id</code> 2, an orphan key <code>NO-SUCH</code> on id 3, and the unknown member on id 4. A NULL insert into <code>NULL_DEMO.id</code> is caught. The lesson row records <code>enforced:</code> plus the Snowflake error. If it had inserted, the lesson would say <code>NOT ENFORCED</code>, and the later check would raise.</li>
+        <li><b>118–126</b> Lesson rows count the duplicate (two times) and name the orphan key.</li>
+        <li><b>128–200</b> Demo exceptions: duplicate is a violation, orphan is a violation, unknown member is <code>ACCEPTED</code> and is not copied. Violations are inserted into <code>MART_QUARANTINE</code> with <code>OBJECT_CONSTRUCT</code> of the fact columns.</li>
+        <li><b>202–246</b> The lesson raises <code>-20002</code> unless the duplicate count is 2, the orphan key <code>3</code> is held once, unknown key <code>4</code> is absent from quarantine, and the NOT NULL lesson says enforced. Then it selects the lesson and the demo exceptions. Expected: those three outcomes, visible before any production check.</li>
+        <li><b>247–433</b> Mart checks. Duplicate <code>transaction_id</code>, duplicate <code>branch_id</code>, and duplicate <code>(customer_id, valid_from)</code> on <code>dim_customer</code> where <code>customer_id &lt;&gt; -1</code>. Orphan facts whose account, customer, or branch key is missing and is not <code>-1</code>. <code>UNKNOWN_MEMBER_MISSING</code> when the fact uses <code>-1</code> and the dimension has no such row. One <code>ACCEPTED</code> summary when facts sit on <code>-1</code> and that member exists.</li>
+        <li><b>435–502</b> Violation rows are copied into quarantine with the fact or dimension payload. Unknown-member summaries are not copied.</li>
+        <li><b>504–603</b> <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, and <code>TRUNCATE</code> are revoked from loader, analyst, ML, app, and persona roles on current and future mart tables. A missing future grant is ignored. A real privilege error is raised. Analysts may <code>SELECT</code> the integrity schema and may not write it.</li>
+        <li><b>605–640</b> After those inserts are committed, the script counts <code>MART</code> violations. Above zero, it raises <code>-20001</code> with up to 15 keys and reasons. The exception rows remain. Expected on a clean mart: <code>mart integrity ok</code>, plus the demo lesson rows. Expected after you have forced an orphan: the key and reason in <code>MART_INTEGRITY_EXCEPTION</code> and a failed statement.</li>
+        <li><b>dbt twin</b> <code>tests/assert_mart_referential_integrity.sql</code> returns the same violation shapes during <code>dbt build</code>. A returned row fails the build. <code>store_failures</code> keeps the key. The Snowflake script is the check after publish, because a table can change outside dbt.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-quality">
+      <header><span class="file">singular tests</span><span class="lines">tests/</span><h3>Content tests next to contracts</h3></header>
+      <ol class="walk">
+        <li><b>Reconcile fact to staging</b> Amounts and counts agree after the fair cutoff.</li>
+        <li><b>Posted rows have FX</b> A posted amount without a rate fails the build.</li>
+        <li><b>Bronze completeness</b> Staging is not missing raw keys inside the lookback. This is the daily completeness tag, excluded from the five-minute selector.</li>
+        <li><b>Required raw keys</b> A warning-level sentinel: recent transaction payloads still contain the keys staging casts. VARIANT will not fail the COPY for you.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e9-exercise"><h3>Exercise</h3><p>Write the 2 a.m. sequence from the runbook without looking: which view, which log, which DAG you retry, and which command you refuse to run first.</p></article>
+  <article class="callout defense" id="e9-defense"><span class="tag">Interview defense</span><p>Publication is blocked by tests, not by hope. CI rebuilds what changed plus downstream, using the manifest the daily job stored. Cost is attributed with an stated estimate. An orphan written outside dbt is quarantined with its key and reason, and the daily DAG fails until a human clears it.</p></article>
+</section>
+
+<section class="episode" id="e10" style="--c:#fbbf24">
+  <p class="eyebrow">E10 · 40 min</p>
+  <h2>Cards: the policy decides, the model scores</h2>
+  <p class="lead">Approval is a SQL policy on features that existed at application time. The model publishes a probability beside that decision. Fraud labels are for measuring recall. They are not features. Offers skip customers with recent fraud. A holdout AUC under 0.70 marks the run <code>REJECTED</code> and leaves the previous scores in place.</p>
+  <article class="card" id="e10-prereq"><h3>Prerequisites</h3><p class="muted">E6 marts, including card facts and <code>ml_customer_features</code>. Role <code>MERIDIAN_ML</code> can read gold and write <code>MERIDIAN_RAW.ML</code>.</p></article>
+  <article class="card" id="e10-files"><h3>Files</h3>
+    <ul>
+      <li><code>09_decisioning_python/train_and_score.py</code></li>
+      <li><code>04_dbt_meridian_dw/macros/card_policy.sql</code></li>
+      <li><code>models/marts/cards/</code> dimensions and facts, especially <code>fct_card_applications.sql</code>, <code>fct_card_fraud_alerts.sql</code>, <code>fct_next_best_offer.sql</code>, <code>ml_customer_features.sql</code></li>
+      <li><code>models/staging/ml/stg_ml__model_scores.sql</code></li>
+      <li><code>tests/assert_fraud_rules_catch_injected_patterns.sql</code></li>
+      <li><code>tests/assert_offers_skip_recent_fraud.sql</code></li>
+      <li><code>tests/test_training.py</code></li>
+      <li><code>05_airflow/dags/meridian_card_decisioning.py</code></li>
+    </ul>
+  </article>
+  <article class="callout run" id="e10-run"><span class="tag">Run</span>
+    <div class="cmd"><code>python3 09_decisioning_python/train_and_score.py
+cd 04_dbt_meridian_dw && dbt build -s stg_ml__model_scores+ --target prod</code><button type="button" data-copy="python3 09_decisioning_python/train_and_score.py&#10;cd 04_dbt_meridian_dw &amp;&amp; dbt build -s stg_ml__model_scores+ --target prod">Copy</button></div>
+  </article>
+  <article class="card" id="e10-expected"><h3>Expected output</h3><p class="muted">The script prints holdout AUC for <code>card_decision_v1</code>, a propensity line, and a fraud line that states features exclude <code>fraud_label</code> and rule flags. Each model then prints <code>SUCCEEDED</code> or <code>REJECTED</code> against gate 0.70. AUC values depend on the synthetic sample. The status strings and the gate do not. A rejected run still writes a run row and does not replace the last good scores. dbt then builds score staging and the offer and application marts that sit downstream.</p></article>
+  <article class="callout fail" id="e10-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Empty gold: the function prints that there are no decided applications and returns without a score frame. Build the card marts first.</li>
+      <li>Leakage: a forbidden column in the feature list raises <code>ValueError</code> before fit. Pytest covers this without Snowflake.</li>
+      <li>Random split: the code refuses that shortcut. <code>time_split</code> holds out the latest 60 days so the future does not train the past.</li>
+      <li>Writing scores back to Postgres. ADR 0005 forbids it. The OLTP is the system of record for accounts, not for model output.</li>
+    </ul>
+  </article>
+  <div id="e10-blocks">
+    <article class="block" id="topic-leakage">
+      <header><span class="file">train_and_score.py</span><span class="lines">53–127</span><h3>Gate, bands, leakage, time split</h3></header>
+      <ol class="walk">
+        <li><b>53</b> <code>AUC_GATE</code> defaults to 0.70 and can be overridden with <code>MERIDIAN_AUC_GATE</code> for an exercise. Production thinking keeps 0.70.</li>
+        <li><b>57 and 95–98</b> Forbidden features include <code>fraud_label</code>, <code>fraud_pattern</code>, <code>decision</code>, <code>has_been_approved</code>, and <code>is_rule_suspect</code>. <code>assert_no_leakage</code> runs before the design matrix is built.</li>
+        <li><b>87–92</b> Score bands: 0.70 and above high, 0.40 and above medium, else low. The band is a label for humans. The policy is still the decision of record.</li>
+        <li><b>101–106</b> Numerics are filled with 0 after a float cast. Categoricals become dummy columns.</li>
+        <li><b>109–114</b> Cutoff is max timestamp minus 60 days. Train is strictly before. Test is on or after.</li>
+        <li><b>117–126</b> Logistic regression, balanced classes, AUC only when the test fold has both classes. Coefficients are sorted by absolute value for the explanation string.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-auc">
+      <header><span class="file">train_and_score.py</span><span class="lines">174–341</span><h3>Three models, one publisher</h3></header>
+      <ol class="walk">
+        <li><b>174–197</b> Decision model reads <code>fct_card_applications</code> where the policy already said APPROVED or REJECTED. The target is that flag. Features are the underwriting columns, not the decision itself.</li>
+        <li><b>200–225</b> Propensity reads <code>ml_customer_features</code>. The label is <code>has_been_approved</code>, which is forbidden as a feature and allowed as <code>y</code>. The sentence you owe: this is “looks like people we approved,” not “will click.”</li>
+        <li><b>227–278</b> Fraud scores from authorizations. The print line states the label and the rule flags are excluded. Rules live in SQL and are tested by the injected-pattern test. The model is a second opinion with a measured recall on a synthetic label.</li>
+        <li><b>280–295</b> Sale-window uplift is a report, not a third training run. Offers use our cardholders’ spend and the published sale calendar.</li>
+        <li><b>297–339</b> <code>publish</code> writes scores and a run row to <code>MERIDIAN_RAW.ML</code>. Status is <code>SUCCEEDED</code> only when AUC passes the gate. <code>REJECTED</code> is stored. Marts that read “latest succeeded run” keep the previous good scores.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-ml">
+      <header><span class="file">meridian_card_decisioning.py · card marts</span><span class="lines">DAG and facts</span><h3>Same features in training and serving</h3></header>
+      <ol class="walk">
+        <li><b>DAG</b> Weekly Monday 03:00 UTC. Refresh <code>ml_customer_features</code> and the card facts, run the same Python file, then <code>dbt build -s stg_ml__model_scores+</code>. Airflow does not contain the model.</li>
+        <li><b>Features</b> <code>ml_customer_features</code> is the feature store at this scale. Training and scoring read it, so there is no second definition to drift.</li>
+        <li><b>Offers</b> <code>fct_next_best_offer</code> picks one catalogue row per customer. <code>assert_offers_skip_recent_fraud</code> fails the build if a recent fraud alert is still contacted.</li>
+        <li><b>Fraud rules</b> <code>assert_fraud_rules_catch_injected_patterns</code> checks the synthetic burst the seed planted. The label was injected so recall is measurable. It is not available at authorization time.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e10-exercise"><h3>Exercise</h3><p>Name three columns that must never enter <code>x</code>, and the one column that is allowed to be <code>y</code> for propensity. Then explain what a 0.62 AUC does to the mart.</p></article>
+  <article class="callout defense" id="e10-defense"><span class="tag">Interview defense</span><p>The SQL policy is the decision of record. The model is a scored column with a time-based holdout and an AUC gate. Labels and rule outputs are not features. Scores land in the warehouse raw ML schema and are modelled by dbt. Nothing is written back to the core banking database.</p></article>
+</section>
+
+<section class="episode" id="e11" style="--c:#a78bfa">
+  <p class="eyebrow">E11 · 45 min</p>
+  <h2>Ask in English, as four different people</h2>
+  <p class="lead">The semantic view is the menu: tables, joins, and metrics a human already checked. Cortex Analyst writes SQL from that menu when the region allows it. The row policy decides which rows come back. Staff and the branch manager see the same rows. Staff contact fields and income are masked.</p>
+  <article class="card" id="e11-prereq"><h3>Prerequisites</h3><p class="muted">E6 marts exist. You can log in as ACCOUNTADMIN once, then as the four demo users after you set their passwords in Snowsight. The SQL file contains no password.</p></article>
+  <article class="card" id="e11-files"><h3>Files</h3>
+    <ul>
+      <li><code>03_snowflake/06_row_level_security.sql</code></li>
+      <li><code>04_dbt_meridian_dw/macros/governance.sql</code></li>
+      <li><code>10_semantic_app/01_semantic_view.sql</code></li>
+      <li><code>10_semantic_app/streamlit_app.py</code></li>
+      <li><code>10_semantic_app/README.md</code></li>
+      <li><code>04_dbt_meridian_dw/analyses/card_questions.sql</code></li>
+      <li><code>03_snowflake/07_omni_search.sql</code> and <code>models/marts/serving/omni_search.sql</code></li>
+    </ul>
+  </article>
+  <article class="callout run" id="e11-run"><span class="tag">Run</span>
+    <ol>
+      <li>Snowsight as ACCOUNTADMIN: <code>03_snowflake/06_row_level_security.sql</code></li>
+      <li><code>dbt run-operation apply_governance_all --target prod</code></li>
+      <li>As <code>MERIDIAN_TRANSFORMER</code>: <code>10_semantic_app/01_semantic_view.sql</code></li>
+      <li>Create the Streamlit app as <code>MERIDIAN_APP</code>, or <code>streamlit run 10_semantic_app/streamlit_app.py</code></li>
+      <li>Log out between users. <code>USE ROLE</code> does not change <code>CURRENT_USER()</code>.</li>
+    </ol>
+  </article>
+  <article class="card" id="e11-expected"><h3>Expected result</h3><p class="muted">The final select of script 06 shows four <code>APP_USER</code> rows: CEO with no branch, Mumbai branch manager, Mumbai staff, and one customer bound to a real cardholder at that branch. Counts of <code>FCT_CARD_AUTHORIZATIONS</code> should rank CEO above the branch roles, and the branch roles above the customer. Staff <code>email</code>, <code>phone</code>, and <code>date_of_birth</code> come back masked (<code>***</code> or null per the policy) while an approved role sees values. The generated SQL for one English question should match across personas. The rows should not. Exact counts are account-dependent because they follow your seed and your entitlements. A region without Cortex Analyst should show the platform error and the verified SQL from <code>card_questions.sql</code>. The app must not invent a number.</p></article>
+  <article class="callout fail" id="e11-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>App owned by <code>MERIDIAN_TRANSFORMER</code>. That role bypasses the policy, so every viewer sees the bank. Own the app with <code>MERIDIAN_APP</code>.</li>
+      <li><code>CREATE SEMANTIC VIEW</code> fails because the feature is off. Use the checked questions in <code>analyses/card_questions.sql</code>. Do not demo a chat with no menu.</li>
+      <li>Cortex region error, common on some trials including ap-south-1. The tables are still valid. Say the app is the client and show the SQL.</li>
+      <li>Customer id null for the demo customer: that branch has no cardholder yet. Seed cards, reload, rebuild, rerun script 06.</li>
+      <li>Filtering <code>country_code</code> inside Python and calling it security. A worksheet would ignore that filter.</li>
+    </ul>
+  </article>
+  <div id="e11-blocks">
+    <article class="block" id="topic-rap">
+      <header><span class="file">06_row_level_security.sql</span><span class="lines">1–76 and 184–275</span><h3>Who sees which row</h3></header>
+      <ol class="walk">
+        <li><b>1–18</b> Security owns policies and <code>APP_USER</code>. dbt applies them. CEO, branch manager, staff, and customer are personas. An unmapped user is denied unless the session is transformer, analyst, or ML.</li>
+        <li><b>27–34</b> Entitlement columns: Snowflake user, persona, branch id, customer id.</li>
+        <li><b>36–45</b> Policies are created <code>IF NOT EXISTS</code> and then <code>ALTER</code>…<code>SET BODY</code>, because a policy attached to tables cannot be dropped without exposing rows. The body cannot join. Branch match is a scalar lookup plus <code>EXISTS</code>. The policy reads <code>CURRENT_USER()</code>, not the role, because Streamlit’s role is the owner for every viewer.</li>
+        <li><b>46–76</b> CEO true. Customer true only for their id. Branch manager and staff true when <code>ENT_CUSTOMER_BRANCH</code> matches their branch. A mapped user who matches none of those is false. An unmapped user is true only for the three bypass roles.</li>
+        <li><b>184–206</b> <code>MERIDIAN_APP</code> gets <code>READ SESSION</code> so <code>CURRENT_USER()</code> is the viewer. It is not a bypass role. <code>V_MY_SCOPE</code> shows the current entitlement.</li>
+        <li><b>216–258</b> Four users, passwords set in the UI. Branch id prefers <code>IN-MUM-0001</code>, else the minimum India branch. Customer id is a cardholder at that branch. The merge is idempotent.</li>
+        <li><b>262–272</b> The proof queries are in the comments: scope view, authorization count, contact columns, then <code>ACCESS_HISTORY</code> after the Enterprise lag.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-masking">
+      <header><span class="file">06_row_level_security.sql</span><span class="lines">143–182</span><h3>Masking is a second control</h3></header>
+      <ol class="walk">
+        <li><b>Tag</b> <code>GOVERNANCE.PII</code> carries the masking policies for string, number, and date.</li>
+        <li><b>Who is masked</b> Staff see masked contact and income. A role the policy exempts sees the value. Row filter still applies first: staff do not see other branches’ rows unmasked or masked.</li>
+        <li><b>How dbt attaches it</b> Model meta lists columns. <code>governance.sql</code> sets the tag. The tag owns the policy, so a new PII column is one metadata line.</li>
+        <li><b>Type trap</b> A number policy must match the column type. The design doc calls out <code>NUMBER(18,2)</code> versus a wider number. Cast in the model.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-country-key">
+      <header><span class="file">06_row_level_security.sql · ADR 0011</span><span class="lines">19–43, 188–202, 247–294</span><h3>A country code is not a boundary</h3></header>
+      <ol class="walk">
+        <li><b>19–22</b> The file states the country proof up front. <code>RAP_COUNTRY_SCOPE</code> is the boundary. The Hong Kong user sees HK only. An unentitled user with the same role sees zero rows. That role has no grant on <code>MERIDIAN_RAW</code>. Staff contact fields stay masked. The branch policies are not rewritten, because one table accepts one row policy.</li>
+        <li><b>31–43</b> <code>APP_USER</code> gains <code>country_code</code>. Branch personas leave it null. <code>ADD COLUMN IF NOT EXISTS</code> updates a table that already existed. The column is the policy argument. It is not the grant.</li>
+        <li><b>188–202</b> Masking treats <code>STAFF</code> and <code>COUNTRY_STAFF</code> the same: strings become <code>***</code>, numbers and dates become null. The CEO, branch managers, and customers stay unmasked. Row filter still applies first.</li>
+        <li><b>247–294</b> The users this file creates are the Mumbai branch personas plus the CEO and one customer. Counts should rank CEO above the branch roles, and those roles above the customer. Staff contact columns are masked. Log out between users.</li>
+        <li><b>ADR 0011 lines 21–29</b> The Hong Kong officer, Hong Kong staff, and the unentitled user share <code>MERIDIAN_COUNTRY_OFFICER</code>. The entitlement row, not the role name, decides HK versus zero. A worksheet predicate <code>country_code = 'HK'</code> is the filter a caller can delete. The policy runs for every query.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-semantic">
+      <header><span class="file">01_semantic_view.sql · streamlit_app.py</span><span class="lines">view and app</span><h3>The menu, then the client</h3></header>
+      <ol class="walk">
+        <li><b>Semantic view</b> Names the facts, the point-in-time joins, and the metrics. Approval rate is an average of a yes-or-no flag. Averaging that average again is the mistake the menu prevents.</li>
+        <li><b>Four questions</b> CEO, branch manager, staff, and customer ask the same English question. You open the SQL expander. The text matches. The row counts follow the policy.</li>
+        <li><b>Find</b> Identifier search reads <code>OMNI_SEARCH</code>. Fragments shorter than 4 characters are rejected. Substring Search Optimization is script 07, Enterprise only. The row policy on the search table still applies. The search box has no private permission check.</li>
+        <li><b>If chat is unavailable</b> Compile <code>card_questions.sql</code> and run it as each user. That is a complete demo of the control.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-cortex">
+      <header><span class="file">10_semantic_app/README.md</span><span class="lines">region section</span><h3>Cortex is regional</h3></header>
+      <ol class="walk">
+        <li><b>Grant</b> <code>SNOWFLAKE.CORTEX_USER</code> is granted to the app role and to each persona role, because the call runs as the viewer.</li>
+        <li><b>Honest limit</b> A trial can build every table and still refuse the chat API. The study guide does not treat a chat answer as evidence unless the SQL expander shows the statement that produced it.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e11-exercise"><h3>Exercise</h3><p>Ask one question as CEO and as the customer. Paste both SQL texts and both row counts in your notes. Then query as a Snowflake user you did not insert into <code>APP_USER</code> and record the zero.</p></article>
+  <article class="callout defense" id="e11-defense"><span class="tag">Interview defense</span><p>The semantic view makes the SQL predictable. The login makes the rows different. Masking is not a substitute for the row policy, and the row policy is not a substitute for masking. A country column is an attribute. Entitlement is the control. An unentitled user sees zero rows.</p></article>
+</section>
+
+<section class="episode" id="e12" style="--c:#a8a29e">
+  <p class="eyebrow">E12 · 45 min</p>
+  <h2>The rules survive a rebuild</h2>
+  <p class="lead">Terraform plans the platform. dbt builds tables and reapplies grants and policies after <code>CREATE OR REPLACE</code>. Security owns the policy body. Contracts fail a public break before consumers see it. Access history shows who read the table.</p>
+  <article class="card" id="e12-prereq"><h3>Prerequisites</h3><p class="muted">E3 platform exists, either from SQL 01–02 or from Terraform. E11 policies exist if you want the post-hook to attach rather than warn.</p></article>
+  <article class="card" id="e12-files"><h3>Files</h3>
+    <ul>
+      <li><code>11_platform_terraform/main.tf</code>, <code>variables.tf</code></li>
+      <li><code>04_dbt_meridian_dw/macros/governance.sql</code></li>
+      <li><code>models/marts/core/_core__models.yml</code> contracts and grants</li>
+      <li>ADR 0008 and ADR 0010</li>
+      <li><code>models/marts/cards/_cards__unit_tests.yml</code> and the staging and intermediate unit-test YAML</li>
+    </ul>
+  </article>
+  <article class="callout run" id="e12-run"><span class="tag">Run</span>
+    <div class="cmd"><code>cd 11_platform_terraform
+terraform plan
+cd ../04_dbt_meridian_dw
+dbt build --target prod
+dbt test --select test_type:unit --target prod</code><button type="button" data-copy="cd 11_platform_terraform&#10;terraform plan&#10;cd ../04_dbt_meridian_dw&#10;dbt build --target prod&#10;dbt test --select test_type:unit --target prod">Copy</button></div>
+  </article>
+  <article class="card" id="e12-expected"><h3>Expected output</h3><p class="muted"><code>terraform plan</code> shows no changes when SQL 01–02 already created the same roles, warehouses, and databases, or it shows the creates on an empty account. A contract break fails <code>dbt build</code> before the public table is replaced with the bad shape. Unit tests fail when you feed a bad fixture and pass when the fixture matches the model. After a prod build, <code>SHOW ROW ACCESS POLICIES</code> on a governed mart still lists <code>RAP_CUSTOMER_SCOPE</code>. <code>ACCESS_HISTORY</code> rows for the demo users appear after the Enterprise lag of up to about three hours. Plan output is account-dependent. The owner split is not.</p></article>
+  <article class="callout fail" id="e12-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Two tools grant the same object. They fight on every plan. ADR 0008 is the stop sign.</li>
+      <li>First <code>dbt build</code> before script 06: the governance macro warns and skips. The build succeeds. The table is not protected until you run the script and build again.</li>
+      <li>Contract on every intermediate model. Refactors become migrations. ADR 0010 keeps contracts on the public three.</li>
+      <li>Terraform state committed. <code>*.tfstate</code> stays local. The provider reads credentials from the environment, not from <code>main.tf</code>.</li>
+    </ul>
+  </article>
+  <div id="e12-blocks">
+    <article class="block" id="topic-terraform">
+      <header><span class="file">main.tf</span><span class="lines">1–31 and the resource blocks</span><h3>Platform as code</h3></header>
+      <ol class="walk">
+        <li><b>1–11</b> The comment lists what is absent on purpose: tables and marts, policies, human users. Those have other owners.</li>
+        <li><b>13–26</b> Provider <code>snowflakedb/snowflake</code>, version floor 1. Credentials are environment variables: organization, account, user, JWT, private key path, role ACCOUNTADMIN.</li>
+        <li><b>28–31</b> <code>functional_roles</code> starts with <code>MERIDIAN_LOADER</code> and the siblings you already saw in SQL 01. Warehouses, the resource monitor, databases, and the role hierarchy follow.</li>
+        <li><b>variables.tf</b> Monthly credit quota defaults to 100 for a trial. Change it in a reviewed variable, not by clicking the monitor only.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-owners">
+      <header><span class="file">macros/governance.sql</span><span class="lines">1–48</span><h3>Apply, do not define</h3></header>
+      <ol class="walk">
+        <li><b>1–21</b> A model declares <code>meta.governance</code> with a policy name and a column, plus PII tags. The macro runs as a post-hook in prod because replace drops policies.</li>
+        <li><b>23–28</b> <code>governance_installed</code> shows policies like <code>RAP_CUSTOMER_SCOPE</code>. Zero rows means warn and skip.</li>
+        <li><b>31–47</b> Drop all row policies on the relation, add the declared one, set tags. Drop-then-add is idempotent and survives a rebuild. Security still owns the body you attach.</li>
+      </ol>
+    </article>
+    <article class="block" id="topic-contracts">
+      <header><span class="file">_core__models.yml · ADR 0010</span><span class="lines">dim_customer contract</span><h3>Public boundaries</h3></header>
+      <ol class="walk">
+        <li><b>dim_customer</b> <code>access: public</code> and <code>contract.enforced: true</code>. Columns declare <code>data_type</code>. A unique test covers <code>customer_key</code>. A combination test covers <code>customer_id</code> plus <code>valid_from</code>.</li>
+        <li><b>The other two</b> <code>dim_branch</code> and <code>fct_transactions</code> carry the same enforcement. Downstream policies, the semantic view, and ML include those names.</li>
+        <li><b>What a contract proves</b> Names and types at publish time. It does not prove an amount is sensible. Data tests still run.</li>
+        <li><b>Raw sentinel</b> Required keys in recent VARIANT payloads warn. They do not turn raw into a typed table. That choice is ADR 0002.</li>
+        <li><b>Unit tests</b> YAML fixtures mock upstream rows and assert the model output, including FX fill and card rules. They fail before a warehouse-sized build when the logic is wrong.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e12-exercise"><h3>Exercise</h3><p>Rename a contracted column on a branch, parse, and watch the contract fail. Restore the name. Then name the owner of the warehouse, the fact, and the masking policy in one breath.</p></article>
+  <article class="callout defense" id="e12-defense"><span class="tag">Interview defense</span><p>One owner per object type. Terraform for platform, dbt for data and grants, security SQL for policies and entitlements. Contracts guard the public marts. A rebuild reapplies the policy in the post-hook, so <code>CREATE OR REPLACE</code> is not a privacy incident. <code>ACCESS_HISTORY</code> is how you prove a read after the fact.</p></article>
+</section>
+
+<section class="episode" id="e13" style="--c:#4ade80">
+  <p class="eyebrow">E13 · 20 min</p>
+  <h2>Say it in two minutes</h2>
+  <p class="lead">The pitch is the architecture, the number you promised, the gate that can fail, and one scar from a drill you actually ran. The repository name is the close. Personal employment history stays out of this page.</p>
+  <article class="card" id="e13-prereq"><h3>Prerequisites</h3><p class="muted">You have run at least one local proof (pytest or Postgres) and you can point at the Snowflake proof you executed in your own account. If a warehouse step is still ahead of you, say “expected result” and name the file. Do not invent a query id.</p></article>
+  <article class="card" id="e13-files"><h3>Files to have open</h3>
+    <p><code>00_architecture/DESIGN_DOC.md</code>, ADR 0001, ADR 0004, ADR 0006, ADR 0010, ADR 0011, <code>fct_transactions.sql</code>, <code>06_row_level_security.sql</code>, <code>12_case_studies/customer_health/</code>, and the runbook.</p>
+  </article>
+  <article class="callout run" id="e13-run"><span class="tag">Run</span><p>A clock. Two minutes. No slide. Then one system-design question answered from the design doc’s NFR table and the cost arithmetic.</p></article>
+  <article class="card" id="e13-expected"><h3 id="topic-pitch">Expected shape of the pitch</h3>
+    <ol>
+      <li><b>Problem.</b> One bank, many countries and currencies, reports that disagree, card decisions that are slow, fraud that arrives late.</li>
+      <li><b>Picture.</b> Postgres to Parquet to append-only VARIANT, dbt star, Airflow clocks, scores in raw ML, English questions through a semantic view, rows by policy.</li>
+      <li><b>Number.</b> Five-minute micro-batch, 15-minute p95, USD reporting currency, type-2 history, deny by default.</li>
+      <li><b>Scar.</b> Pick a failure you produced: a reconciliation exit 1, a freshness DAG red after you stopped the loop, an AUC rejection, a contract failure, or a quarantined orphan. Say what detected it and what you did next. The watermark stayed put unless the load succeeded.</li>
+    </ol>
+  </article>
+  <article class="callout fail" id="e13-failures"><span class="tag">Failure modes</span>
+    <ul>
+      <li>Claiming streaming, Kafka, or Snowpipe Streaming as what you built. You built a micro-batch. The upgrade is written down.</li>
+      <li>Claiming a live Cortex answer in a region that refused the API.</li>
+      <li>Quoting a credit figure without the assumptions in section 4 of the design doc.</li>
+      <li>Describing a country key as the security model. Entitlements are the model. ADR 0011 is the tenancy trade-off.</li>
+    </ul>
+  </article>
+  <div id="e13-blocks">
+    <article class="block">
+      <header><span class="file">this page · DESIGN_DOC.md §4 and §6</span><span class="lines">pitch blocks</span><h3>Four beats</h3></header>
+      <ol class="walk">
+        <li><b>Clock</b> 288 runs a day is the cost conversation. Reference data is on the 02:00 DAG so the hot path stays small.</li>
+        <li><b>Pipeline</b> Watermark, lag, Parquet, COPY, dedupe, merge, health task. Replay is explicit and does not move the watermark.</li>
+        <li><b>Gate</b> dbt tests, contracts, AUC 0.70, reconciliation exit code, quarantine count on the daily DAG.</li>
+        <li><b>Scar</b> Detection, blast radius, and the repair that does not make the next load lie. Append-only raw is why retry is safe.</li>
+      </ol>
+    </article>
+    <article class="block">
+      <header><span class="file">ADR 0011</span><span class="lines">tenancy close</span><h3>Close the tenancy question</h3></header>
+      <ol class="walk">
+        <li><b>Isolation</b> Logical. <code>RAP_COUNTRY_SCOPE</code> plus <code>APP_USER.country_code</code>. The Hong Kong user sees HK. The unentitled user on <code>MERIDIAN_COUNTRY_OFFICER</code> sees zero. Read ADR 0011 lines 17–29.</li>
+        <li><b>Versioning</b> One dbt project and one contract. Schema-per-tenant builds the model N times. Database-per-tenant is N releases. Lines 31–38.</li>
+        <li><b>Cost</b> One warehouse and a shared cache. Database-per-tenant multiplies warehouses. Noisy neighbors are labs 03 and 09, not a reason to split the schema. Lines 48–56.</li>
+        <li><b>Blast radius</b> A bad policy or a bad transform hits every country. That is why the integrity script and the dbt singular test exist. Revisit only for a separate key, a separate failover, or a ban on shared tables. Lines 60–64.</li>
+      </ol>
+    </article>
+  </div>
+  <article class="card" id="e13-exercise"><h3>Exercise</h3><p>Record yourself for two minutes. Play it back. Every proper noun should be a Meridian object or a file. If you hear a product you did not run, replace it with the file that would prove it.</p></article>
+  <article class="card" id="topic-customer-health"><h3>Customer-health case</h3>
+    <p>Run <code>python3 -m pytest tests/test_customer_health_case.py -q</code>, then <code>python3 12_case_studies/customer_health/run_case.py</code>. The mart grain is one Salesforce account per snapshot date. Shared display names stay separate. MRR keeps recurring contract value and drops tax, one-offs, refunds, and failed payments. October ranks Brightline Health first: health 12.5, High, priority 9900. Newly Co is Unknown with priority 0 because it is 16 days old. The labelled back-test is precision 1.0 and recall 0.5, so the release gate is <code>withhold_automated_outreach</code>. dbt materializes the object. The BI tool queries Snowflake. This laptop run is the stand-in, and every seed row is marked synthetic.</p>
+  </article>
+  <article class="callout defense" id="e13-defense"><span class="tag">Interview defense</span><p>I can draw the path, name the latency, name the CDC weaknesses and their mitigations, and show a gate that fails closed. Shared versus database-per-tenant is a written trade-off of isolation, versioning, cost, and blast radius. The built system is one database and a row policy.</p></article>
+</section>
+
+<section class="section" id="interview-index">
+  <div class="eyebrow">Say these with a file open</div>
+  <h2>Interview index</h2>
+  <p class="muted">Each row is a defense you should be able to give from the project. There is no private transcript on this page.</p>
+  <table>
+    <tr><th>Topic</th><th>Where to practice</th><th>Proof</th></tr>
+    <tr><td>Informational Snowflake keys</td><td><a href="#topic-snowflake-keys">E3</a></td><td>dbt unique, not null, relationships, contracts, <code>QUALIFY</code></td></tr>
+    <tr><td>Orphans outside the pipeline</td><td><a href="#topic-quarantine">E9</a></td><td><code>11_mart_integrity_and_quarantine.sql</code> and <code>assert_mart_referential_integrity.sql</code></td></tr>
+    <tr><td>Slow-query order</td><td><a href="#topic-triage">E8</a></td><td><code>10_slow_query_triage_playbook.sql</code></td></tr>
+    <tr><td>Pruning versus spilling</td><td><a href="#topic-pruning">E8</a></td><td>Labs 02, 03, and 06</td></tr>
+    <tr><td>Join fan-out is a grain error</td><td><a href="#topic-fanout">E2</a></td><td>Lab 04 and the SCD2 overlap test</td></tr>
+    <tr><td>Scale up versus scale out</td><td><a href="#topic-scale">E8</a></td><td>Labs 03 and 09</td></tr>
+    <tr><td>Country key versus entitlement</td><td><a href="#topic-country-key">E11</a></td><td><code>06_row_level_security.sql</code> deny-by-default</td></tr>
+    <tr><td>Shared tables versus physical isolation</td><td><a href="#topic-tenancy">E0</a></td><td><code>adr/0011-multitenancy-patterns.md</code></td></tr>
+    <tr><td>Masking and row filters</td><td><a href="#topic-masking">E11</a></td><td>Tag <code>GOVERNANCE.PII</code> and <code>RAP_CUSTOMER_SCOPE</code></td></tr>
+    <tr><td>Micro-batch versus streaming</td><td><a href="#topic-microbatch">E0</a></td><td>Five-minute DAG and ADR 0001</td></tr>
+    <tr><td>dbt transforms, Airflow orchestrates</td><td><a href="#topic-dbt-airflow">E7</a></td><td>The five DAG files</td></tr>
+    <tr><td>Native Snowflake automation</td><td><a href="#topic-native-automation">E3</a></td><td>Script 04, then suspend</td></tr>
+    <tr><td>Customer-health grain and score</td><td><a href="#topic-customer-health">E13</a></td><td><code>12_case_studies/customer_health/</code> and <code>tests/test_customer_health_case.py</code></td></tr>
+  </table>
+  <footer>
+    Sanitized study guide for the public Meridian project. No account identifiers, private keys, or private interview notes. Account-dependent warehouse timings are expected results, not a recording script.
+  </footer>
+</section>
+</main>
+</div>
+<script>
+const links=[...document.querySelectorAll('nav a')];
+const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(!entry.isIntersecting) return;
+    const id='#'+entry.target.id;
+    links.forEach(a=>a.classList.toggle('on', a.getAttribute('href')===id));
+  });
+},{rootMargin:'-15% 0px -75% 0px'});
+sections.forEach(s=>obs.observe(s));
+document.querySelectorAll('[data-copy]').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const text=btn.getAttribute('data-copy').replaceAll('&amp;','&');
+    try{await navigator.clipboard.writeText(text); btn.textContent='Copied';}
+    catch(e){btn.textContent='Select';}
+    setTimeout(()=>{btn.textContent='Copy';},1400);
+  });
+});
+</script>
+</body>
+</html>

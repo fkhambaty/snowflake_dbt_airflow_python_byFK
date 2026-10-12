@@ -1,0 +1,9 @@
+record_label,source_system,extract_id,loaded_at
+SYNTHETIC,salesforce,salesforce_sep,2026-09-02 05:00:00
+SYNTHETIC,salesforce,salesforce_oct,2026-10-02 05:00:00
+SYNTHETIC,stripe,stripe_sep,2026-09-02 05:00:00
+SYNTHETIC,stripe,stripe_oct,2026-10-02 05:00:00
+SYNTHETIC,product,product_sep,2026-09-02 05:00:00
+SYNTHETIC,product,product_oct,2026-10-02 05:00:00
+SYNTHETIC,zendesk,zendesk_sep,2026-09-02 05:00:00
+SYNTHETIC,zendesk,zendesk_oct,2026-10-02 05:00:00

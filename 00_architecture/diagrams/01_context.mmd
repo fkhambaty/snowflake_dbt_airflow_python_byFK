@@ -1,0 +1,25 @@
+%% C4 system context, drawn as a flowchart so it renders anywhere.
+%% People and external systems sit outside the box. One system sits inside.
+%% Standard: C4 model, Level 1 (c4model.com). No technology on this diagram.
+flowchart LR
+  customer["Customer: sees own rows"]
+  staff["Branch staff and manager: see one branch"]
+  ceo["Chief executive: sees the bank"]
+  analyst["Analyst and risk: see the marts"]
+
+  subgraph platform["Meridian analytics platform"]
+    direction TB
+    system["Governed numbers, search, and plain-English questions"]
+  end
+
+  core["Core banking: system of record"]
+  treasury["Treasury: FX rates and products"]
+  idp["Identity provider: who the person is"]
+
+  customer --> system
+  staff --> system
+  ceo --> system
+  analyst --> system
+  system -->|"reads changes only"| core
+  treasury -->|"reference data"| core
+  idp -.->|"user identity, later via SCIM"| system

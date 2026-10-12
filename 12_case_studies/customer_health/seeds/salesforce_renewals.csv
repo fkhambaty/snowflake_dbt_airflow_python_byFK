@@ -1,0 +1,7 @@
+record_label,source_row_id,renewal_id,salesforce_account_id,renewal_date,stage,updated_at,loaded_at
+SYNTHETIC,1,ren_A_old,SF-001,2026-10-05,scheduled,2026-01-01 00:00:00,2026-01-02 00:00:00
+SYNTHETIC,2,ren_A,SF-001,2027-06-01,scheduled,2026-06-01 00:00:00,2026-06-02 00:00:00
+SYNTHETIC,3,ren_B,SF-002,2026-10-20,scheduled,2026-08-01 00:00:00,2026-08-01 00:00:00
+SYNTHETIC,4,ren_C,SF-003,2027-03-01,scheduled,2026-09-10 12:00:00,2026-09-10 12:00:00
+SYNTHETIC,5,ren_D,SF-004,2026-12-15,scheduled,2026-08-01 00:00:00,2026-08-01 00:00:00
+SYNTHETIC,6,ren_E,SF-005,2026-11-15,scheduled,2026-08-01 00:00:00,2026-08-01 00:00:00
