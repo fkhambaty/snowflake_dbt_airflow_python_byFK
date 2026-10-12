@@ -9,8 +9,8 @@ scikit-learn>=1.4         # card decision, propensity, fraud scores (09_decision
 duckdb>=1.1               # offline customer-health interview case (12_case_studies)
 
 # Transformation
-dbt-core>=1.10           # unit_tests, contracts, grants
-dbt-snowflake>=1.9
+dbt-core>=1.12.5           # unit_tests, contracts, grants
+dbt-snowflake>=1.12.1
 sqlfluff>=3.0
 sqlfluff-templater-dbt>=3.0
 
