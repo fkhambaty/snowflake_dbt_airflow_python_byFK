@@ -1,6 +1,6 @@
 # Installed into the Astro runtime image (Airflow 3.x)
 pandas>=2.2
-pyarrow>=16.0
+pyarrow>=25.0.1
 psycopg2-binary>=2.9
 snowflake-connector-python[pandas]>=3.12
 python-dotenv>=1.0
